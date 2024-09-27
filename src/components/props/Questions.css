@@ -1,0 +1,7 @@
+input[type="checkbox"]:checked + label svg {
+  display: block;
+}
+
+input[type="checkbox"]:checked + label {
+  border-color: #4f46e5;
+}

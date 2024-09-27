@@ -1,0 +1,30 @@
+
+      // const handleAttendanceChange = () => getEvent(eventId ?? "");
+
+      // // Check if already subscribed to avoid duplicate subscriptions
+      // if (!unsubscribesRef.current.length) {
+      //   const unsubscribeCreateAttendance = subscribeToEvent(
+      //     "attendanceCreated",
+      //     handleAttendanceChange
+      //   );
+      //   const unsubscribeUpdateAttendance = subscribeToEvent(
+      //     "attendanceUpdated",
+      //     handleAttendanceChange
+      //   );
+
+      //   // Store unsubscribe functions in ref for cleanup
+      //   unsubscribesRef.current = [
+      //     unsubscribeCreateAttendance,
+      //     unsubscribeUpdateAttendance,
+      //   ];
+      // }
+
+      // // Cleanup function to unsubscribe from events
+      // return () => {
+      //   unsubscribesRef.current.forEach((unsubscribe: any) => {
+      //     if (unsubscribe) unsubscribe();
+      //   });
+      //   // Clear the ref array after cleanup
+      //   unsubscribesRef.current = [];
+      // };
+    }

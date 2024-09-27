@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .label-general {
+    @apply text-3xl sm:text-sm md:text-xs;
+  }
+
+  .label-error {
+    @apply text-red-600 font-medium text-sm;
+  }
+
+  .label-disabled {
+    @apply text-gray-400 font-medium text-sm;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 12px; /* Width of the scrollbar */
+  height: 12px; /* Height of the scrollbar for horizontal scroll */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Background of the scrollbar track */
+  border-radius: 10px; /* Rounded corners for the track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c0c0c0; /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Rounded corners for the thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #c0c0c0; /* Color of the thumb on hover */
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin; /* Thin scrollbar */
+  scrollbar-color: #c0c0c0 #f1f1f1; /* Thumb color and track color */
+}
+
+/* Apply overflow properties globally */
+html,
+body {
+  overflow-y: auto; /* Enable vertical scrolling on the body */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
