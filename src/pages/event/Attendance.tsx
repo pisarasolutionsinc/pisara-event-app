@@ -7,6 +7,10 @@ import TableRow from "./sub-components/table/attendance/TableRow";
 
 import AttendanceSearchBar from "../../components/search/AttendanceSearchBar";
 import { BsPerson } from "react-icons/bs";
+import AppDropdown from "./../../components/buttons/AppDropDownButton";
+import { FaFileExcel } from "react-icons/fa6";
+import * as XLSX from "xlsx";
+import { capitalizeFullName } from "../../utils/useFormatter";
 
 type AttendanceProps = {
   event: any;
@@ -31,15 +35,51 @@ const AttendancePage = ({ event, getEvent }: AttendanceProps) => {
     setExpandedRow(expandedRow === index ? null : index);
   };
 
+  const handleExportToExcel = () => {
+    // Map the data to a format suitable for Excel
+    const attendanceData =
+      votersAttendance &&
+      votersAttendance.map((attendee: any) => ({
+        Name: capitalizeFullName(
+          attendee.voter?.name?.firstname || "",
+          attendee.voter?.name?.lastname || ""
+        ),
+        Expenses: attendee.expenses || 0,
+        Status: attendee.status || "N/A",
+        TimeIn: formatTimeByDate(attendee.timeIn) || "N/A",
+        TimeOut: formatTimeByDate(attendee.timeOut) || "N/A",
+        ScannedBy: attendee.scannedBy || "N/A",
+        Duration: attendee.duration || "N/A",
+      }));
+
+    // Create a worksheet from the data
+    const worksheet = XLSX.utils.json_to_sheet(attendanceData);
+    // Create a new workbook and append the worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+
+    // Export the workbook to an XLSX file
+    XLSX.writeFile(workbook, `${event.name || "event"}_attendance.xlsx`);
+  };
+
   return (
-    <div className="w-[100%]   xl:w-[75%] bg-white">
+    <div className="w-[100%]   xl:w-[75%] bg-white overflow-hidden">
       <div className="py-4 px-4 w-full">
-        <AttendanceSearchBar
-          searchInput={searchInput}
-          setSearchInput={setSearchInput}
-          event={event}
-          getEvent={getEvent}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-12 w-full  mb-4 gap-1">
+          <div className="col-span-11">
+            <AttendanceSearchBar
+              searchInput={searchInput}
+              setSearchInput={setSearchInput}
+              event={event}
+              getEvent={getEvent}
+            />
+          </div>
+
+          <div className="col-span-1 flex justify-end ">
+            <AppDropdown />
+          </div>
+        </div>
+
         <div className=" grid grid-cols-1 md:grid-cols-4  mb-4">
           <StatCard
             title="Pending"
@@ -74,8 +114,15 @@ const AttendancePage = ({ event, getEvent }: AttendanceProps) => {
             classIcon="bg-green-100 text-green-300 "
           />
         </div>
-
-        <div className="overflow-x-auto h-[700px] overflow-y-auto ">
+        <div className="flex justify-end mb-4">
+          <button
+            className="text-green-500 border hover:bg-green-500 hover:text-white font-bold py-2 px-4 rounded flex items-center"
+            onClick={handleExportToExcel} // Attach the export handler
+          >
+            <FaFileExcel className="mr-2" /> Export
+          </button>
+        </div>
+        <div className="overflow-x-auto h-[600px] overflow-y-auto ">
           <Table
             headers={[
               "Name",

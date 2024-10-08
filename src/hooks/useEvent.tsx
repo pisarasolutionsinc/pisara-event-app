@@ -39,6 +39,7 @@ export const useEvent = () => {
           "createdAt",
           "updatedAt",
           "attendees",
+          "organizer",
         ])
         .sort("-createdAt")
         .populate(["leaders", "attendees", "attendees.voter.scannedBy"])
@@ -60,34 +61,22 @@ export const useEvent = () => {
     }
   };
 
-  const getEvent = async (id: string): Promise<Event | null> => {
+  const getEvent = async (
+    id: string,
+    select: string[] = [],
+    populate: string[] = []
+  ): Promise<Event | null> => {
     if (!id) {
       return null;
     }
 
+    console.log("Fetching event:", id, select, populate);
+
     try {
       const event = await eventService
         .GET(id)
-        .select([
-          "_id",
-          "name",
-          "description",
-          "date",
-          "location",
-          "coverPhoto",
-          "photos",
-          "leaders",
-          "category",
-          "link",
-          "expenses",
-          "status",
-          "startTime",
-          "endTime",
-          "createdAt",
-          "updatedAt",
-        ])
-        .populate(["leaders", "attendees", "attendees.voter.scannedBy"])
-        .sort("updatedAt")
+        .select(select)
+        .populate(populate)
         .execute();
 
       if (event && !Array.isArray(event)) {
@@ -214,10 +203,36 @@ export const useEvent = () => {
     }
   };
 
+  const createEventAttendance = async (
+    scanResult: string,
+    eventValue: string | null = null
+  ) => {
+    try {
+      const attendanceData = {
+        voter: scanResult,
+        event: eventValue ?? eventId ?? "",
+      };
+
+      const response = await updateAttendance(attendanceData as any);
+
+      if (response) {
+        console.log("Attendance created successfully:", response);
+
+        return response;
+      } else {
+        console.error("Failed to create attendance");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error during scan handling: ", error);
+    }
+  };
+
   const createAttendanceFromCamera = async () => {};
 
   const createAttendanceMultipleAttendees = async (
-    selectedPersons: string[]
+    selectedPersons: string[],
+    eventId: string | null = null
   ) => {
     const attendancePromises = selectedPersons.map(async (personId) => {
       const data = {
@@ -230,9 +245,6 @@ export const useEvent = () => {
         expenses: 0,
         duration: "0h",
       };
-
-      // Log data being sent to API for debugging
-      console.log("Creating attendance with data: ", data);
 
       try {
         // Validate data before making API call
@@ -249,11 +261,12 @@ export const useEvent = () => {
           findVoter[0]._id
         ) {
           // Voter exists, skip creating attendance
-          console.log(`Voter exists for personId: ${personId}`);
+          return []; // Return an empty array to indicate skipping
         } else {
           // Create attendance
-          await createAttendance(data);
           console.log(`Attendance created for personId: ${personId}`);
+          const response = await createAttendance(data);
+          return response; // Return the response from createAttendance
         }
       } catch (error) {
         // Log error details for debugging
@@ -261,16 +274,35 @@ export const useEvent = () => {
           error,
           data,
         });
+        return []; // Return an empty array in case of error
       }
     });
 
     try {
-      // Wait for all promises to resolve
-      await Promise.all(attendancePromises);
+      // Wait for all promises to resolve and collect the results
+      const results = await Promise.all(attendancePromises);
       console.log("All attendance records processed.");
+      // Flatten the result arrays into a single array
+      return results.flat(); // Flatten nested arrays into a single level
     } catch (error) {
       // Log error details if any promise fails
       console.error("Error processing attendance records:", error);
+      return []; // Return an empty array in case of an error
+    }
+  };
+
+  const deleteEvent = async (id: string) => {
+    try {
+      const response = await eventService.DELETE(id).execute();
+      if (response) {
+        console.log("Event deleted successfully:", response);
+        return response;
+      } else {
+        console.error("Failed to delete event");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error during event deletion:", error);
     }
   };
 
@@ -293,5 +325,7 @@ export const useEvent = () => {
     isOpenExpensesModal,
     setIsOpenExpensesModal,
     searchEvents,
+    deleteEvent,
+    createEventAttendance,
   };
 };

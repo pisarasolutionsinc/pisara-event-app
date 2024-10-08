@@ -14,7 +14,7 @@ import { useReport } from "../../../hooks/useReport";
 import AddVotersByFileDrawer from "../../../components/drawer/AddVotersByFile";
 
 const Dashboard = () => {
-  const { person, getPersons } = usePerson(); // Destructure totalVoters
+  const { getPersons } = usePerson(); // Destructure totalVoters
   const { fetchReports, report } = useReport();
   const { getInitials } = useGeneral();
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -28,12 +28,22 @@ const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [person, setPerson] = useState<Person[]>([]);
   const limit = 10;
 
   useEffect(() => {
-    getPersons(page, limit);
+    fetchPersons();
     fetchReports && fetchReports();
   }, [page, limit]);
+
+  const fetchPersons = async () => {
+    try {
+      const response = await getPersons(page, limit);
+      setPerson(response as Person[]);
+    } catch (error) {
+      console.error("Error fetching persons:", error);
+    }
+  };
 
   const handleNextPageChange = () => {
     setPage((prevPage) => {

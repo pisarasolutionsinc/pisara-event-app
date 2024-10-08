@@ -2,7 +2,7 @@ import { useEvent } from "../../../../../hooks/useEvent";
 import { FiCalendar, FiCamera, FiClock } from "react-icons/fi";
 import { useScanner } from "../../../../../hooks/useScanner";
 import { useQRScanner } from "../../../../../hooks/useQRScanner";
-import { BiQrScan, BiRefresh } from "react-icons/bi";
+import { BiArrowBack, BiBlock, BiQrScan, BiRefresh } from "react-icons/bi";
 import { Sling as Hamburger } from "hamburger-react";
 import { Attendance } from "../../../../../model/attendanceModel";
 import { useEffect, useState, useRef } from "react";
@@ -16,6 +16,8 @@ import { useLocalStorage } from "../../../../../utils/useLocalStorage";
 import { EventStatusEnum } from "../../../../../config/modelConfig";
 import { useToast } from "../../../../../context/ToastProvider";
 import LoadingOverlay from "../../../../../components/lazy/LoadingOverlay";
+
+import { Link } from "react-router-dom";
 
 interface Props {
   toggled: boolean;
@@ -31,7 +33,9 @@ const AttendanceSidebar = ({ toggled, toggle, event, getEvent }: Props) => {
   const { createAttendanceFromScanner, updateEvent } = useEvent();
   const [qrCodeValue, setQrCodeValue] = useState<string | null>(null);
   const [isOpenModal, setIsOpenModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<"camera" | "device">("camera");
+  const [activeTab, setActiveTab] = useState<"camera" | "device" | "block">(
+    "block"
+  );
   const [attendance, setAttendance] = useState<Attendance | null>(null);
   const [isOpenModalExpenses, setIsOpenModalExpenses] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -46,7 +50,8 @@ const AttendanceSidebar = ({ toggled, toggle, event, getEvent }: Props) => {
       setUserId(auth.user.id);
     }
   }, [auth.user]);
-  const handleTabChange = (tab: "camera" | "device") => {
+
+  const handleTabChange = (tab: "camera" | "device" | "block") => {
     setActiveTab(tab);
   };
 
@@ -101,55 +106,52 @@ const AttendanceSidebar = ({ toggled, toggle, event, getEvent }: Props) => {
       clearTimeout(timeoutRef.current);
     }
 
-    // Set a new timeout for processing the scanned value
-    timeoutRef.current = setTimeout(async () => {
-      setIsRequestInProgress(true); // Set request in progress
+    setIsRequestInProgress(true); // Set request in progress
 
-      const scannedValue = value.includes("-") ? value.split("-")[1] : value;
-      const eventValue =
-        value.includes("-") && value.split("-")[2] !== "customId"
-          ? value.split("-")[2]
-          : event?._id;
+    const scannedValue = value.includes("-") ? value.split("-")[1] : value;
+    const eventValue =
+      value.includes("-") && value.split("-")[2] !== "customId"
+        ? value.split("-")[2]
+        : event?._id;
 
-      const type =
-        value.includes("-") && value.split("-")[2] !== "customId"
-          ? "voter"
-          : "customId";
+    const type =
+      value.includes("-") && value.split("-")[2] !== "customId"
+        ? "voter"
+        : "customId";
 
-      try {
-        const result = await createAttendanceFromScanner(
-          type,
-          scannedValue,
-          eventValue,
-          getuserId
-        );
+    try {
+      const result = await createAttendanceFromScanner(
+        type,
+        scannedValue,
+        eventValue,
+        getuserId
+      );
 
-        if (result && !Array.isArray(result)) {
-          const getResult: Attendance = result;
-          const status = getResult.status;
-          const value = `UID-${getResult.voter}-${getResult.event}`;
-          const expenses = getResult.expenses;
+      if (result && !Array.isArray(result)) {
+        const getResult: Attendance = result;
+        const status = getResult.status;
+        const value = `UID-${getResult.voter}-${getResult.event}`;
+        const expenses = getResult.expenses;
 
-          if (status === "present" && getEvent) {
-            setQrCodeValue(value);
-            setIsOpenModal(true);
-            getEvent(getResult.event ?? "");
-          } else if (status === "completed" && expenses === 0 && getEvent) {
-            setIsOpenModalExpenses(true);
-            setAttendance(getResult);
-            getEvent(getResult.event ?? "");
-          }
-
-          // Activate cooldown after successful scan
-          setIsScanCooldown(true);
-          setTimeout(() => setIsScanCooldown(false), 3000); // 3-second cooldown
+        if (status === "present" && getEvent) {
+          setQrCodeValue(value);
+          setIsOpenModal(true);
+          getEvent(getResult.event ?? "");
+        } else if (status === "completed" && expenses === 0 && getEvent) {
+          setIsOpenModalExpenses(true);
+          setAttendance(getResult);
+          getEvent(getResult.event ?? "");
         }
-      } catch (error) {
-        console.error("Error:", error);
-      } finally {
-        setIsRequestInProgress(false); // Reset request in progress state
+
+        // Activate cooldown after successful scan
+        setIsScanCooldown(true);
+        setTimeout(() => setIsScanCooldown(false), 3000); // 3-second cooldown
       }
-    }, 3000); // 3-second delay
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setIsRequestInProgress(false); // Reset request in progress state
+    }
   };
 
   const { result, videoRef, setResult } = useScanner(handleScan);
@@ -178,12 +180,27 @@ const AttendanceSidebar = ({ toggled, toggle, event, getEvent }: Props) => {
     <div className=" w-[100%]  xl:w-[25%] bg-white h-full py-2 px-4 border-r">
       <div className="hidden   md:flex md:items-center  md:justify-between ">
         {" "}
-        <Hamburger toggled={toggled} toggle={toggle} size={20} color="grey" />
+        {getLocal("auth").user.accessLevel === "0" ? (
+          <Hamburger toggled={toggled} toggle={toggle} size={20} color="grey" />
+        ) : (
+          <Link to="/" className="flex items-center">
+            <BiArrowBack size={20} color="grey" />{" "}
+          </Link>
+        )}
         <div className="flex justify-center my-4">
           <button
             className={`py-2 px-4 ${
-              activeTab === "camera" ? "bg-blue-500 text-white" : "bg-gray-200"
+              activeTab === "block" ? "bg-blue-500 text-white" : "bg-gray-200"
             } rounded-l-lg`}
+            onClick={() => handleTabChange("block")}
+          >
+            <BiBlock size={20} />
+          </button>
+          <button
+            className={`py-2 px-4 ${
+              activeTab === "camera" ? "bg-blue-500 text-white" : "bg-gray-200"
+            } 
+            `}
             onClick={() => handleTabChange("camera")}
           >
             <FiCamera size={20} />
@@ -336,10 +353,10 @@ const AttendanceSidebar = ({ toggled, toggle, event, getEvent }: Props) => {
             </div>
 
             {!event ? (
-              <p className="text-sm text-gray-700 flex items-center mt-2">
+              <div className="text-sm text-gray-700 flex items-center mt-2">
                 <div className="w-5 h-5 bg-gray-200 rounded-full animate-pulse mr-2" />
                 <div className="w-36 h-4 bg-gray-200 rounded animate-pulse" />
-              </p>
+              </div>
             ) : (
               <p className="text-sm text-gray-700 flex items-center mt-2">
                 <FaLocationPin className="text-gray-500 mr-2" />

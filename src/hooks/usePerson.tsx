@@ -1,11 +1,12 @@
 import { useCallback, useState } from "react";
 import { Person } from "../model/personModel";
 import { PersonService } from "../services/personService";
+import { useParams } from "react-router-dom";
 // import { useSocket } from "./useSocket";
 
 export const usePerson = () => {
+  const { id: personId } = useParams();
   // const { emitEvent } = useSocket();
-  const [person, setPerson] = useState<Person[] | Person | undefined>([]);
   const [search, setSearch] = useState<Person[]>([]);
   const personService = new PersonService("person");
 
@@ -36,9 +37,9 @@ export const usePerson = () => {
           .execute()) || [];
 
       if (Array.isArray(response)) {
-        setPerson(response);
+        return response;
       } else {
-        setPerson([]);
+        return [];
         console.error(
           "Unexpected response format: Expected an array but received:",
           response
@@ -70,6 +71,8 @@ export const usePerson = () => {
             "role",
             "type",
             "category",
+            "organization",
+            "occupation",
           ])
           .execute()) || null;
       return response;
@@ -94,6 +97,8 @@ export const usePerson = () => {
             "address",
             "contact",
             "birthday",
+            "organization",
+            "occupation",
             "age",
             "sex",
             "status",
@@ -209,7 +214,7 @@ export const usePerson = () => {
     }
   };
 
-  const createPerson = async (person: any) => {
+  const createPerson = async (person: Person) => {
     try {
       const response = await personService.POST(person).execute();
       // emitEvent("personCreated", response);
@@ -267,7 +272,7 @@ export const usePerson = () => {
   );
 
   return {
-    person,
+    personId,
     getPersons,
     getPerson,
     searchPerson,

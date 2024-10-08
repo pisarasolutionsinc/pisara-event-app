@@ -6,12 +6,12 @@ import { LOCATION_MAP } from "../../config/locationConfig";
 import { useAttendance } from "../../hooks/useAttendance";
 import { usePerson } from "../../hooks/usePerson";
 import { useToast } from "../../context/ToastProvider";
+import { useEvent } from "../../hooks/useEvent";
 
 interface AddAttendeesDrawerProps {
   isDrawerOpen: boolean;
   setIsDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
   getEvent: (id: string) => Promise<any>;
-  event?: any;
 }
 
 type Barangay = {
@@ -23,8 +23,8 @@ const AddVotersByLocationDrawer = ({
   isDrawerOpen,
   setIsDrawerOpen,
   getEvent,
-  event,
 }: AddAttendeesDrawerProps) => {
+  const { eventId, getEvent: fetchEvent } = useEvent();
   const [barangays, setBarangays] = useState<Barangay[]>([]);
   const [citizens, setCitizens] = useState<Person[]>([]);
   const [selectedBarangays, setSelectedBarangays] = useState<Barangay[]>([]);
@@ -34,11 +34,57 @@ const AddVotersByLocationDrawer = ({
     {}
   );
   const { showToast } = useToast();
+  const [event, setEvent] = useState<any>(null);
+  const selectedFields = [
+    "_id",
+    "name",
+    "description",
+    "date",
+    "location",
+    "coverPhoto",
+    "photos",
+    "leaders",
+    "category",
+    "link",
+    "expenses",
+    "status",
+    "startTime",
+    "endTime",
+    "createdAt",
+    "updatedAt",
+    "organizer",
+    "template.certificate",
+  ];
+  const populateFields = [
+    "leaders",
+    "attendees",
+    "attendees.voter.scannedBy",
+    "template.certificate",
+  ];
+
+  useEffect(() => {
+    fetchGetEvent();
+  }, []);
+
+  const fetchGetEvent = async () => {
+    try {
+      const result = await fetchEvent(
+        eventId as string,
+        selectedFields,
+        populateFields
+      );
+
+      setEvent(result);
+    } catch (error) {
+      console.error("Error fetching event:", error);
+    }
+  };
 
   const municipality = event?.location[0]?.city;
   const region = event?.location[0]?.region;
   const province = event?.location[0]?.province;
 
+  // Fetch barangays when event location changes
   useEffect(() => {
     if (municipality && region && province) {
       const fetchedBarangays =
@@ -52,20 +98,22 @@ const AddVotersByLocationDrawer = ({
     }
   }, [municipality, region, province]);
 
+  // Filter citizens based on selected barangays
   useEffect(() => {
-    if (Array.isArray(citizens)) {
-      const filteredCitizens = citizens.filter((person: Person) =>
-        person.address?.some((addr) =>
-          barangays.some((barangay) => addr.barangay === barangay.name)
-        )
-      );
-      setCitizens(filteredCitizens);
-    } else {
-      setCitizens([]);
-    }
-  }, [barangays, citizens]);
+    const filteredCitizens = citizens.filter((person: Person) =>
+      person.address?.some((addr) =>
+        barangays.some((barangay) => addr.barangay === barangay.name)
+      )
+    );
+    setCitizens(filteredCitizens);
+  }, [barangays]);
 
   const countCitizensByBarangays = useCallback(async () => {
+    if (selectedBarangays.length === 0) {
+      setBarangayCounts({});
+      return;
+    }
+
     try {
       const counts = await Promise.all(
         selectedBarangays.map(async (barangay) => {
@@ -94,11 +142,7 @@ const AddVotersByLocationDrawer = ({
   }, [selectedBarangays, province, municipality, countPerson]);
 
   useEffect(() => {
-    if (selectedBarangays.length > 0) {
-      countCitizensByBarangays();
-    } else {
-      setBarangayCounts({});
-    }
+    countCitizensByBarangays();
   }, [selectedBarangays, countCitizensByBarangays]);
 
   const handleBarangaySelection = (barangay: Barangay) => {
@@ -128,12 +172,16 @@ const AddVotersByLocationDrawer = ({
         result &&
         result.every((res) => Array.isArray(res) && res.length > 0)
       ) {
-        showToast("Voters added successfully", "success", "bottom-10 right-10");
+        showToast(
+          "Attendees added successfully",
+          "success",
+          "bottom-10 right-10"
+        );
         getEvent(event._id);
         setIsDrawerOpen(false);
       } else {
         showToast(
-          "Failed to add voters because it was existing or invalid request",
+          "Failed to add attendees because it was existing or invalid request",
           "error",
           "bottom-10 right-10"
         );
@@ -156,7 +204,7 @@ const AddVotersByLocationDrawer = ({
       <Drawer
         isOpen={isDrawerOpen}
         toggleDrawer={() => setIsDrawerOpen(!isDrawerOpen)}
-        title="Add Voters By Location"
+        title="Add Attendees By Location"
         bgColor="bg-white"
         titleColor="text-black"
       >

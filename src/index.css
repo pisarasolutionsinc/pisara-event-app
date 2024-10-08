@@ -47,3 +47,26 @@ body {
   overflow-y: auto; /* Enable vertical scrolling on the body */
   overflow-x: hidden; /* Prevent horizontal scrolling */
 }
+
+.carousel-container {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.carousel-content {
+  display: inline-flex;
+  animation: scroll 20s linear infinite;
+}
+
+.carousel-content img {
+  margin-right: 16px;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ReactNode } from "react";
 import { SideNavigation } from "../components/navigation/SideNavigation";
 import { Outlet } from "react-router-dom";
-import { app } from "./../config/app";
+import { navigation } from "./../config/app";
 import { Sling as Hamburger } from "hamburger-react";
 
 type TNavigation = {
@@ -77,7 +77,7 @@ export const SideNavigationContent = () => {
   return (
     <div className="flex flex-col p-5 bg-slate-800 min-h-screen">
       <div className="flex flex-col items-center h-full">
-        {app.navigation.map((navItem) => handleNavigation(navItem))}
+        {navigation.main.map((navItem) => handleNavigation(navItem))}
       </div>
     </div>
   );

@@ -48,8 +48,6 @@ const LocationPicker = ({
     defaultLocation.barangay
   );
 
-  console.log({ selectedRegion, selectedProvince, selectedMunicipality });
-
   const regions = Object.keys(LOCATION_MAP) as string[];
   const provinces = selectedRegion
     ? Object.keys(LOCATION_MAP[selectedRegion]?.Provinces || {})
@@ -216,6 +214,10 @@ const LocationPicker = ({
           </select>
         </div>
       )}
+      <p className="text-sm text-transparent">
+        {selectedBarangay}, {selectedMunicipality},{selectedProvince},{" "}
+        {selectedRegion}
+      </p>
     </div>
   );
 
@@ -282,7 +284,7 @@ const LocationPicker = ({
   );
 
   const GridVariant = () => (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2">
       <select
         value={selectedRegion || ""}
         onChange={handleRegionChange}

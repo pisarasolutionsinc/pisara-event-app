@@ -30,16 +30,26 @@ const getConsistentColor = (id: string): string => {
 
 // Function to get initials from a string
 const getInitials = (name: string): string => {
+  if (!name || typeof name !== "string") return ""; // Check if name is undefined or not a string
+
   const words = name.split(" ");
-  if (words.length === 1) return words[0][0].toUpperCase();
-  return words[0][0].toUpperCase() + words[1][0].toUpperCase();
+  if (words.length === 1) return words[0][0]?.toUpperCase() || ""; // Use optional chaining to safely access the first letter
+  return (
+    (words[0][0]?.toUpperCase() || "") + (words[1][0]?.toUpperCase() || "")
+  ); // Safely get initials
 };
 
 interface EventCardProps {
   event: Event;
+  handleDeleteEvent: (id: string) => void;
+  handleCloneEvent: (data: any) => void;
 }
 
-const EventCard = ({ event }: EventCardProps) => {
+const EventCard = ({
+  event,
+  handleDeleteEvent,
+  handleCloneEvent,
+}: EventCardProps) => {
   const totalExpenses = event.totalExpenses || 0;
   const numberOfAttendees = event.totalAttendees || 0;
   const eventInitials = getInitials(event.name || "");
@@ -76,11 +86,21 @@ const EventCard = ({ event }: EventCardProps) => {
 
   const handleClone = () => {
     console.log("Clone action triggered for event:", event._id);
+    const clonedEvent = {
+      ...event,
+      _id: undefined,
+      name: `[Clone] ${event.name}`,
+      totalExpenses: 0,
+      status: EventStatusEnum.PENDING,
+    };
+    console.log("Cloned event:", clonedEvent);
+    handleCloneEvent(clonedEvent);
     setIsDropdownOpen(false);
   };
 
   const handleDelete = () => {
     console.log("Delete action triggered for event:", event._id);
+    handleDeleteEvent(event._id || "");
     setIsDropdownOpen(false);
   };
 
@@ -200,7 +220,7 @@ const EventCard = ({ event }: EventCardProps) => {
                     : "text-gray-500 border-gray-500"
                 }`}
               >
-                {event.status.toLowerCase() === "pending"
+                {event.status?.toLowerCase() === EventStatusEnum.PENDING
                   ? "SCHEDULED"
                   : event.status || "Unknown"}
               </span>

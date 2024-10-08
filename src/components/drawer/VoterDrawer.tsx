@@ -1,61 +1,49 @@
 import Drawer from "../cards/Drawer";
-import { useState, useEffect } from "react";
-import { useDropzone } from "react-dropzone";
-
+import { useState, useRef } from "react";
 import LocationPicker from "../filter/LocationPicker";
-import {
-  VoterStatusEnum,
-  PersonCategoryEnum,
-  PersonTypeEnum,
-  PersonRoleEnum,
-  GenderEnum,
-} from "../../config/modelConfig";
+import { GenderEnum } from "../../config/modelConfig";
 import { Address } from "../../model/collectionModel";
-import { BiDownload } from "react-icons/bi";
 import { usePerson } from "../../hooks/usePerson";
-import {
-  Gender,
-  PersonCategory,
-  PersonRole,
-  PersonType,
-  VoterStatus,
-} from "../../config/common";
-
-import { MdGeneratingTokens } from "react-icons/md";
+import { Gender } from "../../config/common";
 import { calculateAge } from "../../utils/useMath";
 import Input from "../input/Input";
 import { useEvent } from "../../hooks/useEvent";
 import { useToast } from "../../context/ToastProvider";
+import { uploadFileToCloudinary } from "../../services/cloudinaryService";
+import { MdGeneratingTokens } from "react-icons/md";
+import { dataURLtoBlob } from "../../app/utils/useBlob";
+import { Person } from "../../model/personModel";
+import { FaCamera, FaRedo } from "react-icons/fa";
 
 interface VoterDrawerProps {
   isDrawerOpen: boolean;
   setIsDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  openFrom?: string;
+  page?: string;
   data?: any;
   getEvent?: (id: string) => Promise<any>;
 }
 
 const generateId = () => {
-  // Function to generate a random ID (customize as needed)
   return Math.random().toString(36).substr(2, 9).toUpperCase();
 };
 
 const VoterDrawer = ({
   isDrawerOpen,
   setIsDrawerOpen,
-  openFrom = "voter",
-  data,
+  page = "voter",
   getEvent,
 }: VoterDrawerProps) => {
   const { createPerson } = usePerson();
-  const { createAttendanceMultipleAttendees } = useEvent();
-  const [files, setFiles] = useState<File[]>([]);
-  const [coverPhoto, setCoverPhoto] = useState<string | null>(null);
+  const { eventId, createEventAttendance } = useEvent();
+
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
   const [middleName, setMiddleName] = useState<string>("");
   const [suffix, setSuffix] = useState<string>("");
   const [customId, setCustomId] = useState<string>(generateId());
+  const [organization, setOrganization] = useState<string>("");
+  const [occupation, setOccupation] = useState<string>("");
   const [location, setLocation] = useState<Address>({
     country: "Philippines",
     region: "",
@@ -66,24 +54,15 @@ const VoterDrawer = ({
     period: { start: "", end: "" },
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
   const [date, setDate] = useState<string>("");
-
   const [gender, setGender] = useState<string>("male");
   const [contact, setContact] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const { showToast } = useToast();
 
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: {
-      "image/*": [], // Accept any image type
-    },
-    onDrop: (acceptedFiles) => {
-      setFiles(acceptedFiles);
-      const file = acceptedFiles[0];
-      setCoverPhoto(URL.createObjectURL(file));
-    },
-  });
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
 
   const handleGenerateId = () => {
     setCustomId(generateId());
@@ -93,27 +72,43 @@ const VoterDrawer = ({
     setCustomId(e.target.value);
   };
 
-  useEffect(() => {
-    return () => {
-      if (coverPhoto) {
-        URL.revokeObjectURL(coverPhoto);
-      }
-    };
-  }, [coverPhoto]);
-
-  useEffect(() => {
-    if (data?.location?.[0]) {
-      setLocation({
-        country: data.location[0].country || "Philippines",
-        region: data.location[0].region || "",
-        province: data.location[0].province || "",
-        city: data.location[0].city || "",
-        district: data.location[0].district || "",
-        barangay: data.location[0].barangay || "",
-        period: data.location[0].period || { start: "", end: "" },
+  const startCamera = async () => {
+    setIsCameraActive(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
       });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+      showToast("Failed to access camera", "error", "bottom-10 right-10");
     }
-  }, [data, isDrawerOpen]);
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      const tracks = stream.getTracks();
+      tracks.forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    setIsCameraActive(false);
+  };
+
+  const handleCaptureImage = () => {
+    if (canvasRef.current && videoRef.current) {
+      const canvas = canvasRef.current;
+      const context = canvas.getContext("2d");
+      if (context) {
+        context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        const dataURL = canvas.toDataURL("image/png");
+        setCapturedImage(dataURL);
+        stopCamera();
+      }
+    }
+  };
 
   const handleLocationChange = (
     region: string | null,
@@ -135,69 +130,85 @@ const VoterDrawer = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    let genderEnum: Gender;
-    switch (gender.toLowerCase()) {
-      case "male":
-        genderEnum = GenderEnum.MALE;
-        break;
-      case "female":
-        genderEnum = GenderEnum.FEMALE;
-        break;
-      default:
-        console.error("Invalid gender value");
-        return; // or handle error as needed
-    }
 
-    const newEvent = {
-      customId: customId,
-      photo: coverPhoto || "",
-      name: {
-        firstname: firstName,
-        middlename: middleName === "" ? undefined : middleName,
-        lastname: lastName,
-        suffix: suffix === "" ? undefined : suffix,
-      },
-      address: [location],
-      contact: contact,
-      email: email,
-      age: calculateAge(date), // You might want to calculate age from date
-      sex: genderEnum, // Use GenderEnum here
-      birthday: date,
-      status: VoterStatusEnum.ACTIVE as VoterStatus, // Convert status to enum
-      role: PersonRoleEnum.VIEWER as PersonRole, // Convert role to enum
-      type: PersonTypeEnum.MEMBER as PersonType, // Convert type to enum
-      category: PersonCategoryEnum.VOTER as PersonCategory, // Convert category to enum
-    };
+    const genderEnum =
+      gender.toLowerCase() === "male" ? GenderEnum.MALE : GenderEnum.FEMALE;
+
+    let uploadedPhotoUrl = "";
 
     try {
-      const response = await createPerson(newEvent);
+      // Check if there's an image to upload
+      if (capturedImage) {
+        // Convert the base64 image string to a Blob
+        const imageBlob = dataURLtoBlob(capturedImage);
 
-      if (response) {
+        // Create a File from the Blob (optional, depends on what Cloudinary expects)
+        const file = new File([imageBlob], `${customId}-photo.png`, {
+          type: imageBlob.type,
+        });
+
+        // Upload the file to Cloudinary
+        const { secure_url } = await uploadFileToCloudinary(file, "voters");
+        uploadedPhotoUrl = secure_url; // Store the uploaded URL
+      }
+
+      const newAttendee: Person = {
+        customId,
+        photo: uploadedPhotoUrl || "", // Use uploaded photo URL or empty string
+        name: {
+          firstname: firstName.toLowerCase(),
+          middlename: middleName ? middleName.toLowerCase() : undefined,
+          lastname: lastName.toLowerCase(),
+          suffix: suffix ? suffix.toLowerCase() : undefined,
+        },
+        organization,
+        occupation,
+        address: [location],
+        contact,
+        email: email.toLowerCase(),
+        age: calculateAge(date),
+        sex: genderEnum,
+        birthday: date,
+      };
+
+      const response = await createPerson(newAttendee);
+
+      // Check if the response is an array or a single person object
+      const person = Array.isArray(response) ? response[0] : response;
+
+      if (person) {
         setCustomId(generateId());
         setFirstName("");
         setLastName("");
         setMiddleName("");
         setSuffix("");
-        setCoverPhoto(null);
+        setCapturedImage(null);
         setGender("male");
         setContact("");
         setEmail("");
         setDate("");
+        setOrganization("");
+        setOccupation("");
         setLocation({ ...location, period: { start: "", end: "" } });
 
-        // Check if response is an array or a single Person object
-        if (Array.isArray(response)) {
-        } else {
-          // Assuming response is a single Person object
-          if (openFrom === "attendance") {
-            createAttendanceMultipleAttendees([response._id as string]);
+        if (page === "attendance") {
+          const result = await createEventAttendance(person._id ?? "", eventId); // Use person._id here
+
+          if (result) {
+            setIsLoading(false);
+            setIsDrawerOpen(false);
+            getEvent && getEvent(eventId as any);
           }
+        } else {
+          showToast(
+            "Attendee created successfully",
+            "success",
+            "bottom-10 right-10"
+          );
+          setIsLoading(false);
+          setIsDrawerOpen(false);
         }
       }
-      showToast("Voter created successfully", "success", "bottom-10 right-10");
-      setIsLoading(false);
-      setIsDrawerOpen(false);
-      getEvent && getEvent(data._id as string);
     } catch (error) {
       setIsLoading(false);
       showToast("Failed to create voter", "error", "bottom-10 right-10");
@@ -210,44 +221,73 @@ const VoterDrawer = ({
       <Drawer
         isOpen={isDrawerOpen}
         toggleDrawer={() => setIsDrawerOpen(!isDrawerOpen)}
-        title="Add Voter"
+        title="Add Attendee"
         bgColor="bg-white"
         titleColor="text-black"
       >
-        <form className="p-4" onSubmit={handleSubmit}>
-          <div
-            {...getRootProps()}
-            className="border-2 border-dashed border-gray-300 p-4 text-center"
-          >
-            <input {...getInputProps()} />
-            {coverPhoto ? (
-              <img
-                src={coverPhoto}
-                alt="Cover"
-                className="mx-auto mb-4 max-h-60"
-              />
-            ) : (
-              <div className=" flex justify-center items-center ">
-                <div className="text-center">
-                  <BiDownload size={40} className="mx-auto mb-4" />
-                  <p>Drag & drop a cover photo here, or click to select one</p>
-                </div>
+        <form className="p-4 mb-10" onSubmit={handleSubmit}>
+          <div className="mt-4">
+            <label className="label-general block font-medium text-gray-700">
+              Camera
+            </label>
+
+            {!capturedImage && (
+              <div className="relative w-full h-auto bg-gray-200">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  muted
+                  className="w-full h-auto bg-gray-200"
+                />
+
+                {isCameraActive ? (
+                  <button
+                    type="button"
+                    onClick={handleCaptureImage}
+                    className="absolute bottom-4 border border-blue-600 hover:bg-blue-600 text-white rounded-md left-1/2 transform -translate-x-1/2 btn-primary flex items-center justify-center px-4 py-2"
+                  >
+                    <FaCamera className="mr-2" />
+                    Capture
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={startCamera}
+                    className="absolute inset-0  btn-secondary flex items-center justify-center px-4 py-2"
+                  >
+                    <FaCamera className="mr-2" />
+                    Start Camera
+                  </button>
+                )}
+              </div>
+            )}
+
+            {capturedImage && (
+              <div className="mt-4">
+                <img
+                  src={capturedImage}
+                  alt="Captured"
+                  className="w-full h-auto"
+                />
+                <button
+                  type="button"
+                  onClick={() => setCapturedImage(null)}
+                  className="mt-2 btn-danger flex items-center justify-center px-4 py-2"
+                >
+                  <FaRedo className="mr-2" />
+                  Retake
+                </button>
               </div>
             )}
           </div>
-          {files.length > 0 && (
-            <div className="mt-2">
-              {files.map((file) => (
-                <div key={file.name}>{file.name}</div>
-              ))}
-            </div>
-          )}
 
-          <div className="mt-4 relative">
+          {/* Canvas element to capture image */}
+          <canvas ref={canvasRef} width="640" height="480" className="hidden" />
+          <div className="mt-4 relative ">
             <label className="label-general block font-medium text-gray-700">
               Custom Id
             </label>
-            <div className="relative">
+            <div className="relative ">
               <input
                 type="text"
                 className="mt-1 block w-full text-sm border-gray-500 border rounded-md shadow-sm px-4 py-2 pr-10 focus:outline-none focus:ring-0"
@@ -301,6 +341,25 @@ const VoterDrawer = ({
             inputType={"text"}
             onChange={(e) => setSuffix(e.target.value)}
           />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Organization (optional)"
+              value={organization}
+              variant={"inputwithoverlapping"}
+              componentType={"input"}
+              inputType={"text"}
+              onChange={(e) => setOrganization(e.target.value)}
+            />
+            <Input
+              label="Occupation (optional)"
+              value={occupation}
+              variant={"inputwithoverlapping"}
+              componentType={"input"}
+              inputType={"text"}
+              onChange={(e) => setOccupation(e.target.value)}
+            />
+          </div>
+
           <div className="mt-4">
             <LocationPicker
               onLocationChange={handleLocationChange}
@@ -309,7 +368,7 @@ const VoterDrawer = ({
           </div>
 
           <Input
-            label="Email *"
+            label="Email (optional)"
             value={email}
             variant={"inputwithoverlapping"}
             componentType={"input"}
@@ -318,7 +377,7 @@ const VoterDrawer = ({
           />
 
           <Input
-            label="Contact *"
+            label="Contact (optional)"
             value={contact}
             variant={"inputwithoverlapping"}
             componentType={"input"}
@@ -380,7 +439,7 @@ const VoterDrawer = ({
                 Please Wait...
               </>
             ) : (
-              " Add Voter"
+              " Add Attendee"
             )}
           </button>
         </form>

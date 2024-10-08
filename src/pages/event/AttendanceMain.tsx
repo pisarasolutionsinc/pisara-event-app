@@ -18,6 +18,27 @@ export const AttendanceMain = ({
     "scanner"
   );
   const [event, setEvent] = useState<any>(null);
+  const selectedFields = [
+    "_id",
+    "name",
+    "description",
+    "date",
+    "location",
+    "coverPhoto",
+    "photos",
+    "leaders",
+    "category",
+    "link",
+    "expenses",
+    "status",
+    "startTime",
+    "endTime",
+    "createdAt",
+    "updatedAt",
+    "organizer",
+    "template.certificate",
+  ];
+  const populateFields = ["leaders", "attendees", "attendees.voter.scannedBy"];
 
   useHookOnce(() => {
     fetchEvent();
@@ -30,7 +51,11 @@ export const AttendanceMain = ({
 
   const fetchEvent = async () => {
     try {
-      const result = await getEvent(eventId as string);
+      const result = await getEvent(
+        eventId as string,
+        selectedFields,
+        populateFields
+      );
       setEvent(result);
     } catch (error) {
       console.error("Error fetching event:", error);

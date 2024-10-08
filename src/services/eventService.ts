@@ -49,8 +49,8 @@ export class EventService extends APIService {
     return this;
   }
 
-  DELETE(): this {
-    this.endpoint = "/delete";
+  DELETE(id: string): this {
+    this.endpoint = `/remove/${id}`;
     this.method = "DELETE";
     return this;
   }
@@ -172,11 +172,11 @@ export class EventService extends APIService {
     if (this.method === "GET" || this.method === "DELETE") {
       const queryString = this.buildQueryParams();
       if (queryString) {
-        url += `?${queryString}`;
+        url += `?${queryString.replace(/%5B%5D/g, "[]")}`;
       }
     }
 
-    console.log("body", JSON.stringify(this.getBody()));
+    // console.log("body", JSON.stringify(this.getBody()));
 
     const options: RequestInit = {
       method: this.method,

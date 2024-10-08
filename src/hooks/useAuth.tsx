@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { userService } from "../services/userService";
 import { useCookie } from "../utils/useCookie";
 import { useSessionStorage } from "../utils/useSessionStorage";
 import { useLocalStorage } from "../utils/useLocalStorage";
+import { UserService } from "../services/userService";
+
 interface Auth {
   isAuthenticated: boolean;
   token: string | null;
@@ -12,10 +13,12 @@ interface Auth {
 export const useAuth = (): {
   auth: Auth;
   Login: (email: string, password: string) => Promise<void>;
+  getUser: (id: string) => Promise<any | null>; // Include the return type for getUser
 } => {
   const { setCookie, getCookie } = useCookie();
   const { saveSession, getSession } = useSessionStorage();
   const { saveLocal, getLocal } = useLocalStorage();
+  const userService = new UserService("user");
 
   // Initialize auth state with default values
   const [auth, setAuth] = useState<Auth>({
@@ -50,7 +53,9 @@ export const useAuth = (): {
 
   const Login = async (email: string, password: string) => {
     try {
-      const result = await userService.LOGIN({ email, password });
+      const result: any = await userService.LOGIN(email, password).execute();
+
+      console.log("Login result:", result);
 
       if (result && result.user && result.token) {
         // Update auth state with user and token information
@@ -79,8 +84,23 @@ export const useAuth = (): {
     }
   };
 
+  const getUser = async (id: string) => {
+    try {
+      const result = await userService
+        .GET(id)
+        .select(["name", "email", "metadata"])
+        .populate([])
+        .execute();
+      return result;
+    } catch (error) {
+      console.error("Get user failed:", error);
+      return null;
+    }
+  };
+
   return {
     auth,
     Login,
+    getUser, // Return getUser here
   };
 };

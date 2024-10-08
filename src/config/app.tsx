@@ -1,133 +1,39 @@
-import { RouteObject } from "react-router-dom";
-// import { Home } from "../pages/Home";
-// import { Dashboard } from "../pages/Dashboard";
 import { RiHome2Line } from "react-icons/ri";
-import { MainLayout } from "../layouts/MainLayout";
-import { Encoding } from "../pages/Encoding";
-// import { BsDatabaseAdd } from "react-icons/bs";
-// import { FcSurvey } from "react-icons/fc";
-// import Survey from "../pages/Survey";
-import SurveyForm from "../pages/Form";
+
 import { FaUser } from "react-icons/fa";
 import { AppConfig } from "./../model/appConfigModels";
-import SurveyFormEditPage from "../pages/form/Edit";
-import { FormLayout } from "../layouts/FormLayout";
-import VotersPage from "../pages/voters/Voters";
+
 import { MdEvent } from "react-icons/md";
-import EventPage from "../pages/event/Events";
-import { PublicFormLayout } from "../layouts/PublicFormLayout";
-// import ElectionDashboard from "../pages/election/ElectionPage";
+
 import { BiMap } from "react-icons/bi";
 
-import CloudinaryUploadPage from "../pages/test/cloudinaryUploadPage";
-import LoginPage from "../pages/auth/Login";
-import MapPage from "../pages/map/Map";
-import TestPage from "../pages/test/test";
-import { ScannerLayout } from "../layouts/ScannerLayout";
-import ComingSoon from "../pages/others/ComingSoon";
-import InfiniteScroll from "../pages/test/InifitineScrolling";
-
 export const app = {
-  routes: {
-    guest: [
-      {
-        path: "/",
-        element: <LoginPage />,
-      },
-      {
-        path: "*",
-        element: <LoginPage />,
-      },
-    ],
-    protected: [
-      {
-        element: <MainLayout />,
-        children: [
-          {
-            path: "/",
-            element: <ComingSoon />,
-          },
-          {
-            path: "/home",
-            element: <ComingSoon />,
-          },
-          {
-            path: "/encoding",
-            element: <Encoding />,
-          },
-          {
-            path: "/survey",
-            element: <ComingSoon />,
-          },
-          {
-            path: "/voters",
-            element: <VotersPage />,
-          },
-          {
-            path: "/attendance",
-            element: <SurveyForm />,
-          },
-          {
-            path: "/events",
-            element: <EventPage />,
-          },
-
-          {
-            path: "/election",
-            element: <ComingSoon />,
-          },
-          {
-            path: "/map",
-            element: <MapPage />,
-          },
-          {
-            path: "/test",
-            element: <TestPage />,
-          },
-          {
-            path: "/test/infinitescroll",
-            element: <InfiniteScroll />,
-          },
-        ],
-      },
-      {
-        children: [
-          {
-            path: "/event/:id",
-            element: <ScannerLayout />,
-          },
-        ],
-      },
-      {
-        element: <FormLayout />,
-        children: [
-          {
-            path: "/survey/:id/edit",
-            element: <SurveyFormEditPage />,
-          },
-          {
-            path: "/survey/:id",
-            element: <SurveyForm />,
-          },
-        ],
-      },
-      {
-        element: <PublicFormLayout />,
-        children: [
-          {
-            path: "/survey/:id/view",
-            element: <SurveyForm />,
-          },
-          {
-            path: "/test/upload",
-            element: <CloudinaryUploadPage />,
-          },
-        ],
-      },
-    ] as RouteObject[],
+  host: {
+    local: "http://localhost:5000/api",
+    test: "http://localhost:3000",
+    production: "http://localhost:3000",
   },
 
-  navigation: [
+  control: {
+    useTesting: false,
+  },
+};
+
+export const TEMPLATE = {
+  CERTIFICATE: {
+    APPRECIATION: {
+      HEADER: "Appreciation",
+      BODY: "Thank you for sharing your valuable expertise on Food Safety during the Kadiwa ng Pangulo Training",
+    },
+    ATTENDANCE: {
+      HEADER: "Attendance",
+      BODY: "Thank you for your attendance. Your presence is greatly appreciated.",
+    },
+  },
+};
+
+export const navigation = {
+  main: [
     {
       key: "home",
       name: "Home",
@@ -135,20 +41,6 @@ export const app = {
       path: "/",
       icon: <RiHome2Line size={20} />,
     },
-    // {
-    //   key: "election",
-    //   name: "Election",
-    //   type: "link",
-    //   path: "/election",
-    //   icon: <BsDatabaseAdd size={20} />,
-    // },
-    // {
-    //   key: "survey",
-    //   name: "Survey",
-    //   type: "link",
-    //   path: "/survey",
-    //   icon: <FcSurvey size={20} />,
-    // },
     {
       key: "voters",
       name: "Voters",
@@ -171,16 +63,22 @@ export const app = {
       icon: <BiMap size={20} />,
     },
   ],
-
-  host: {
-    local: "http://localhost:5000/api",
-    test: "http://localhost:3000",
-    production: "http://localhost:3000",
-  },
-
-  control: {
-    useTesting: false,
-  },
+  counter: [
+    {
+      key: "events",
+      name: "Events",
+      type: "link",
+      path: "/",
+      icon: <MdEvent size={20} />,
+    },
+    {
+      key: "welcome",
+      name: "",
+      type: "link",
+      path: "/voters",
+      icon: <FaUser size={20} />,
+    },
+  ],
 };
 
 export const ui: AppConfig = {
@@ -215,24 +113,38 @@ export const ui: AppConfig = {
   },
 };
 
+// export const CLOUDINARY = {
+//   CLOUD_NAME: "oro-dev" || process.env.CLOUD_NAME,
+//   UPLOAD_PRESET_UNASIGNED: "oro-dev" || process.env.UPLOAD_PRESET_UNASIGNED,
+//   DEFAULT_FOLDER: "oro-app/" || process.env.DEFAULT_FOLDER,
+//   API_KEY: "295771128257341" || process.env.API_KEY,
+//   API_SECRET: "1lJO-0IaT8ICTnVIPb41I9GoWdM" || process.env.API_SECRET,
+//   IMAGE_UPLOAD_ENDPOINT:
+//     "https://api.cloudinary.com/v1_1/oro-dev/image/upload" ||
+//     process.env.IMAGE_UPLOAD_ENDPOINT,
+//   IMAGE_DESTROY_ENDPOINT:
+//     "https://api.cloudinary.com/v1_1/oro-dev/image/destroy" ||
+//     process.env.IMAGE_DESTROY_ENDPOINT,
+// };
+
 export const CLOUDINARY = {
-  CLOUD_NAME: "oro-dev" || process.env.CLOUD_NAME,
-  UPLOAD_PRESET_UNASIGNED: "oro-dev" || process.env.UPLOAD_PRESET_UNASIGNED,
-  DEFAULT_FOLDER: "oro-app/" || process.env.DEFAULT_FOLDER,
-  API_KEY: "295771128257341" || process.env.API_KEY,
-  API_SECRET: "1lJO-0IaT8ICTnVIPb41I9GoWdM" || process.env.API_SECRET,
+  CLOUD_NAME: "trifectasi" || process.env.CLOUD_NAME,
+  UPLOAD_PRESET_UNASIGNED: "kadiwa" || process.env.UPLOAD_PRESET_UNASIGNED,
+  DEFAULT_FOLDER: "kadiwa/" || process.env.DEFAULT_FOLDER,
+  API_KEY: "787379199984857" || process.env.API_KEY,
+  API_SECRET: "mM9CVVrVkqX1Dm9RDmVEc2XK81E" || process.env.API_SECRET,
   IMAGE_UPLOAD_ENDPOINT:
-    "https://api.cloudinary.com/v1_1/oro-dev/image/upload" ||
+    "https://api.cloudinary.com/v1_1/trifectasi/image/upload" ||
     process.env.IMAGE_UPLOAD_ENDPOINT,
   IMAGE_DESTROY_ENDPOINT:
-    "https://api.cloudinary.com/v1_1/oro-dev/image/destroy" ||
+    "https://api.cloudinary.com/v1_1/trifectasi/image/destroy" ||
     process.env.IMAGE_DESTROY_ENDPOINT,
 };
 // Ensure URLType includes the values used in the URL object
 type URLType = "LOCAL" | "TEST" | "PRODUCTION";
 
 export const URL = {
-  USE: "LOCAL" as URLType, // Correct type assertion
+  USE: "TEST" as URLType, // Correct type assertion
   APP: {
     LOCAL: "http://localhost:5173",
   },

@@ -13,6 +13,8 @@ export interface Person {
   _id?: string;
   customId: string;
   precinct?: Precinct;
+  organization?: string;
+  occupation?: string;
   photo?: string;
   name: Name;
   address: Address[];
@@ -21,8 +23,8 @@ export interface Person {
   birthday?: string;
   age: number;
   sex: Gender; // male, female
-  status: VoterStatus; // active or inactive
-  role: PersonRole; // admin , user or viewer
-  type: PersonType; // voter, watcher, leader
-  category: PersonCategory; // voter, unregistered
+  status?: VoterStatus; // active or inactive
+  role?: PersonRole; // admin , user or viewer
+  type?: PersonType; // voter, watcher, leader
+  category?: PersonCategory; // voter, unregistered
 }

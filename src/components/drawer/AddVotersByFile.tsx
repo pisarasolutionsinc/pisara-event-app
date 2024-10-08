@@ -43,6 +43,7 @@ const AddVotersByFileDrawer = ({
   const [isUploading, setIsUploading] = useState<{ [key: number]: boolean }>(
     {}
   );
+
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -78,10 +79,11 @@ const AddVotersByFileDrawer = ({
   };
 
   const handleConfirmUpload = async () => {
+    setShowConfirmation(false);
+
     if (selectedFile && selectedIndex !== null) {
       await handleAddVoters(selectedFile, event, selectedIndex);
     }
-    setShowConfirmation(false);
     setSelectedFile(null);
     setSelectedIndex(null);
   };
@@ -200,18 +202,12 @@ const AddVotersByFileDrawer = ({
       <Drawer
         isOpen={isDrawerOpen}
         toggleDrawer={() => setIsDrawerOpen(!isDrawerOpen)}
-        title="Add Voters By File"
+        title="Add Attendees By File"
         bgColor="bg-white"
         titleColor="text-black"
       >
         <div className="p-4">
-          <UploadCard
-            variant="custom"
-            onFileUpload={(files) => {
-              handleFileUpload(files);
-              resetProgressStates(); // Reset progress on new file upload
-            }}
-          />
+          <UploadCard variant="custom" onFileUpload={handleFileUpload} />
           <div className="mt-4">
             <h2 className="text-sm font-bold mb-2 text-gray-500">
               Uploaded Files:
@@ -297,13 +293,13 @@ const AddVotersByFileDrawer = ({
                               : ""
                           } flex items-center text-red-500 hover:text-white hover:bg-green-500 border rounded-full gap-2 px-2`}
                         >
-                          <BiPlusCircle /> Add Voters
+                          <BiPlusCircle /> Add Attendees
                         </button>
                         {showConfirmation && index === selectedIndex && (
                           <div className="relative z-20">
                             <ConfirmationCard
                               title="Confirm Upload"
-                              message="Are you sure you want to add voters from this file?"
+                              message="Are you sure you want to add attendee(s) from this file?"
                               onConfirm={handleConfirmUpload}
                               onCancel={handleCancelUpload}
                             />

@@ -13,11 +13,17 @@ export interface Event {
   location: Address[];
   coverPhoto?: string;
   photos?: string[];
-  leaders: Person[];
+  leaders?: Person[];
+  organizer?: string;
   category: EventCategory;
   link?: string;
   totalExpenses: number;
-  status: EventStatus; // "pending" | "active" | "done" | "cancelled"
+  status: EventStatus;
   attendees?: Attendance[];
   totalAttendees: number;
+  template?: {
+    id?: string[];
+    welcome?: string[];
+    certificate?: string[];
+  };
 }

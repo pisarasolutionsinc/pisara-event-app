@@ -10,7 +10,8 @@ import { EventSearchBar } from "../../components/search/EventSearchBar";
 import { useHookOnce } from "../../utils/useHook";
 
 const EventPage = () => {
-  const { report, fetchReports, searchEvents } = useEvent(); // Use React Router's useSearchParams to get the tab query parameter
+  const { report, fetchReports, searchEvents, deleteEvent, createEvent } =
+    useEvent(); // Use React Router's useSearchParams to get the tab query parameter
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const totalEvent = report?.event?.totalEvent ?? 0;
@@ -28,8 +29,9 @@ const EventPage = () => {
     "status",
     "totalExpenses",
     "totalAttendees",
+    "organizer",
   ];
-  const populateFields = ["leaders"];
+  const populateFields = ["leaders", "attendees"];
 
   // Read tab parameter from URL or default to 'events'
   const [activeTab, setActiveTab] = useState(
@@ -49,6 +51,27 @@ const EventPage = () => {
     fetchReports();
   });
 
+  const handleDeleteEvent = async (id: string) => {
+    await deleteEvent(id);
+    fetchEvents();
+  };
+
+  const handleCloneEvent = async (data: any) => {
+    try {
+      const event = await createEvent(data);
+
+      if (event) {
+        console.log("Event created successfully:", event);
+        setEvents([event, ...events]);
+      } else {
+        console.error("Failed to create event");
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+    }
+  };
+
   const fetchEvents = async (
     query: { field?: string; value?: any } = {},
     selectFields: string[] = [
@@ -61,6 +84,11 @@ const EventPage = () => {
       "status",
       "totalExpenses",
       "totalAttendees",
+      "endTime",
+      "startTime",
+      "date",
+      "location",
+      "organizer",
     ],
     populateFields: string[] = ["leaders"],
     limit: number = 8,
@@ -202,7 +230,10 @@ const EventPage = () => {
         <div>
           {activeTab === "events" ? (
             <div>
-              <EventSearchBar fetchReports={fetchReports} />
+              <EventSearchBar
+                fetchReports={fetchReports}
+                fetchEvents={fetchEvents}
+              />
             </div>
           ) : null}
         </div>
@@ -224,7 +255,12 @@ const EventPage = () => {
                     ></div>
                   ))
               : events.map((event) => (
-                  <EventCard key={event._id} event={event} />
+                  <EventCard
+                    key={event._id}
+                    event={event}
+                    handleDeleteEvent={handleDeleteEvent}
+                    handleCloneEvent={handleCloneEvent}
+                  />
                 ))}
           </div>
 

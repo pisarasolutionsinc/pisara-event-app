@@ -2,40 +2,36 @@ import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import { twMerge } from "tailwind-merge";
 import { useGeneral } from "../../hooks/useGeneral";
+import { TEMPLATE } from "../../config/assets";
 
 interface IdCardsProps {
   title?: string;
   value?: number | string;
   data?: any;
-
   isDisplayData?: boolean;
-  variant?:
-    | "default"
-    | "custom"
-    | "gradient"
-    | "borderedIcon"
-    | "dark"
-    | "design1"
-    | "design2";
+  variant?: "default" | "custom" | "1" | "2" | "3";
   icon?: React.ReactNode;
   classParent?: string;
   classIcon?: string;
   classTitle?: string;
   classValue?: string;
+  backgroundPhoto?: string;
+  logo?: string;
+  eventCategory?: string;
+  eventName?: string;
+  eventId?: string;
 }
 
 export const IdCard = ({
-  title,
-  value,
   data,
-
   isDisplayData = true,
   variant = "default",
-  icon,
+  backgroundPhoto,
   classParent,
-  classIcon,
-  classTitle,
-  classValue,
+  logo,
+  eventCategory,
+  eventName,
+  eventId,
 }: IdCardsProps) => {
   const { getInitials } = useGeneral();
   const [isBrokenPhoto, setIsBrokenPhoto] = useState(false);
@@ -51,8 +47,10 @@ export const IdCard = ({
           <div className="flex justify-center">
             {data && data?.photo && !isBrokenPhoto ? (
               <img
-                src={data.photo}
-                alt={`${data.name.firstname} ${data.name.lastname}`}
+                src={data?.photo}
+                alt={`${data?.name?.firstname || ""} ${
+                  data?.name?.lastname || ""
+                }`}
                 className="w-28 h-28 rounded-full border-4 border-gray-200 object-cover shadow-lg"
                 onError={(e) => {
                   e.currentTarget.src = "";
@@ -61,21 +59,23 @@ export const IdCard = ({
               />
             ) : (
               <div className="w-28 h-28 flex items-center justify-center bg-blue-500 text-white text-3xl font-semibold rounded-full shadow-lg">
-                {getInitials(`${data.name.firstname} ${data.name.lastname}`)}
+                {getInitials(
+                  `${data?.name?.firstname || ""} ${data?.name?.lastname || ""}`
+                )}
               </div>
             )}
           </div>
 
           <div className="text-gray-800 text-center">
             <p className="text-3xl font-bold mb-2">
-              {data.name.firstname} {data.name.lastname}
+              {data?.name?.firstname || ""} {data?.name?.lastname || ""}
             </p>
-            <p className="font-bold mb-2">{data.email}</p>
+            <p className="font-bold mb-2">{data?.email}</p>
           </div>
           <div className="flex justify-center">
             <div className=" my-4 border-2 rounded-lg w-fit p-2">
               <QRCode
-                value={"ID-" + data.customId + "-customId" || ""}
+                value={"ID-" + data?.customId + "-customId" || ""}
                 size={150}
               />
             </div>
@@ -91,8 +91,10 @@ export const IdCard = ({
               <div className="flex justify-center">
                 {data && data?.photo && !isBrokenPhoto ? (
                   <img
-                    src={data.photo}
-                    alt={`${data.name.firstname} ${data.name.lastname}`}
+                    src={data?.photo}
+                    alt={`${data?.name?.firstname || ""} ${
+                      data?.name?.lastname || ""
+                    }`}
                     className="w-28 h-28 rounded-full border-4 border-gray-200 object-cover shadow-lg"
                     onError={(e) => {
                       e.currentTarget.src = "";
@@ -102,7 +104,9 @@ export const IdCard = ({
                 ) : (
                   <div className="w-28 h-28 flex items-center justify-center bg-blue-500 text-white text-3xl font-semibold rounded-full shadow-lg">
                     {getInitials(
-                      `${data.name.firstname} ${data.name.lastname}`
+                      `${data?.name?.firstname || ""} ${
+                        data?.name?.lastname || ""
+                      }`
                     )}
                   </div>
                 )}
@@ -110,16 +114,16 @@ export const IdCard = ({
 
               <div className="text-gray-800 text-center">
                 <p className="text-3xl font-bold mb-2">
-                  {data.name.firstname} {data.name.lastname}
+                  {data?.name?.firstname || ""} {data?.name?.lastname || ""}
                 </p>
-                <p className="font-bold mb-2">{data.email}</p>
+                <p className="font-bold mb-2">{data?.email}</p>
               </div>
             </>
           )}
           <div className="flex justify-center">
             <div className=" my-4 border-2 rounded-lg w-fit p-2">
               <QRCode
-                value={"ID-" + data.customId + "-customId" || ""}
+                value={"ID-" + data?.customId + "-customId" || ""}
                 size={150}
               />
             </div>
@@ -127,111 +131,223 @@ export const IdCard = ({
         </div>
       </div>
     ),
-    gradient: () => (
-      <div className="bg-gradient-to-r from-blue-500 to-green-500 p-6 rounded-xl shadow-lg">
-        <h3 className="text-sm font-semibold text-white mb-4">{title}</h3>
-        <p className="text-3xl text-white">{value}</p>
-      </div>
-    ),
-    borderedIcon: () => (
-      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-        <div className="flex items-center mb-4">
-          <span className="mr-2 text-blue-500">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 13l4 4L19 7"
+    1: () => (
+      <div>
+        <div
+          className={twMerge(
+            `"bg-white border rounded-lg max-w-[23rem] my-6 mx-auto"`,
+            classParent
+          )}
+          style={{
+            backgroundImage: `url(${TEMPLATE.CERT.D1})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          <div className="flex justify-between">
+            <img src={logo} alt="" className="w-16 h-16 m-4" />
+            {/* <div className="flex justify-center">
+              <img src={ASSET.LOGIN_LOGO_2} alt="" className="w-16 h-16 m-4" />
+
+              <img
+                src={ASSET.BAGONG_PILIPINAS_LOGO}
+                alt=""
+                className="w-16 h-16 m-4"
               />
-            </svg>
-          </span>
-          <h3 className="text-sm font-semibold">{title}</h3>
+            </div> */}
+          </div>
+          <div className="items-center gap-6 px-5">
+            <div className="flex justify-center mt-10">
+              {data && data?.photo && !isBrokenPhoto ? (
+                <img
+                  src={data?.photo}
+                  alt={`${data?.name?.firstname} ${data?.name?.lastname}`}
+                  className="w-28 h-28 rounded-full border-4  border-gray-200 object-cover shadow-lg"
+                  onError={(e) => {
+                    e.currentTarget.src = "";
+                    setIsBrokenPhoto(true);
+                  }}
+                />
+              ) : (
+                <div className="w-28 h-28 flex uppercase items-center justify-center bg-blue-500 text-white text-3xl font-semibold rounded-full shadow-lg">
+                  {getInitials(
+                    `${data?.name?.firstname} ${data?.name?.lastname}`
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="text-gray-800 text-center mt-4">
+              <p className="text-3xl font-bold mb-2 capitalize">
+                {data?.name?.firstname || ""} {data?.name?.lastname || ""}
+              </p>
+              {/* <p className="font-bold mb-2">{data?.email}</p> */}
+            </div>
+            <div className="text-gray-800 text-center ">
+              <p className="text-sm uppercase font-semibold text-gray-400 mt-4">
+                Organization
+              </p>
+              <p className="text-xl font-bold text-gray-800 capitalize">
+                {data?.organization}
+              </p>
+              <p className="text-sm uppercase font-semibold text-gray-400 mt-4">
+                Occupation
+              </p>
+              <p className="text-xl font-bold text-gray-800  capitalize">
+                {data?.occupation}
+              </p>
+            </div>
+            <div className="flex justify-center mt-8">
+              <div className="my-4 border-2 bg-white rounded-lg w-fit p-2">
+                <QRCode
+                  value={"ID-" + data?.customId + "-customId" || ""}
+                  size={50}
+                />
+              </div>
+            </div>
+          </div>
         </div>
-        <p className="text-2xl">{value}</p>
       </div>
     ),
-    dark: () => (
-      <div className="bg-gray-800 p-6 rounded-lg shadow-md">
-        <h3 className="text-sm font-semibold text-gray-300 mb-4">{title}</h3>
-        <p className="text-2xl text-white">{value}</p>
-      </div>
-    ),
-    design1: () => (
+    2: () => (
       <div
         className={twMerge(
-          `bg-white p-6 rounded-lg  flex items-center justify-between`,
+          `"bg-white border rounded-lg max-w-sm my-6 mx-auto"`,
           classParent
         )}
+        style={{
+          backgroundImage: `url(${backgroundPhoto})`,
+          backgroundSize: "cover", // Ensure the image covers the div
+          backgroundPosition: "center", // Center the background image
+        }}
       >
-        <div className="items-center text-center">
-          {icon && (
-            <div
-              className={twMerge(
-                `mr-2 bg-gray-100 rounded-full px-3 py-2  text-2xl w-fit text-gray-300  mx-auto`,
-                classIcon
-              )}
-            >
-              {icon}
+        <div>
+          <img src={logo} alt="" className="w-16 h-16 m-4" />
+        </div>
+        <div className="items-center gap-6 px-5">
+          <div className="flex justify-center ">
+            {data && data?.photo && !isBrokenPhoto ? (
+              <img
+                src={data?.photo}
+                alt={`${data?.name?.firstname} ${data?.name?.lastname}`}
+                className="w-28 h-28 rounded-full border-4  border-gray-200 object-cover shadow-lg"
+                onError={(e) => {
+                  e.currentTarget.src = "";
+                  setIsBrokenPhoto(true);
+                }}
+              />
+            ) : (
+              <div className="w-28 h-28 flex uppercase items-center justify-center bg-blue-500 text-white text-3xl font-semibold rounded-full shadow-lg">
+                {getInitials(
+                  `${data?.name?.firstname} ${data?.name?.lastname}`
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="text-gray-800 text-center mt-4">
+            <p className="text-3xl font-bold mb-2 capitalize">
+              {data?.name?.firstname || ""} {data?.name?.lastname || ""}
+            </p>
+            <p className="font-bold mb-2">{data?.email}</p>
+            <p className="text-sm">{data?.organization}</p>
+          </div>
+          <div className="flex justify-center">
+            <div className="my-4 border-2 bg-white rounded-lg w-fit p-2">
+              <QRCode
+                value={"ID-" + data?.customId + "-customId" || ""}
+                size={150}
+              />
+            </div>
+          </div>
+          {eventId && (
+            <div className="text-center mt-4 ">
+              <p className="text-gray-800 text-center text-sm">
+                {eventCategory || ""}
+              </p>
+              <p className="text-gray-800 text-center text-sm font-semibold">
+                {eventName || ""}
+              </p>
             </div>
           )}
         </div>
-        <div className="text-center">
-          <h3
-            className={twMerge(
-              "text-sm font-semibold text-gray-400",
-              classTitle
-            )}
-          >
-            {title}
-          </h3>
-          <p
-            className={twMerge("text-2xl font-bold text-gray-500", classValue)}
-          >
-            {value}
-          </p>
-        </div>
       </div>
     ),
-    design2: () => (
+    3: () => (
       <div
         className={twMerge(
-          `bg-white p-6 rounded-lg  flex items-center justify-between`,
+          `"bg-white border rounded-lg max-w-[26rem] my-6 mx-auto"`,
           classParent
         )}
+        style={{
+          backgroundImage: `url(${backgroundPhoto})`,
+          backgroundSize: "cover", // Ensure the image covers the div
+          backgroundPosition: "center", // Center the background image
+        }}
       >
-        <div className="text-left">
-          <p
-            className={twMerge("text-2xl font-bold text-gray-500", classValue)}
-          >
-            {value}
-          </p>
-          <h3
-            className={twMerge(
-              "text-xs font-semibold text-gray-400",
-              classTitle
-            )}
-          >
-            {title}
-          </h3>
+        <div>
+          <img src={logo} alt="" className="w-16 h-16 m-4" />
         </div>
-        <div className="items-center text-center">
-          {icon && (
-            <div
-              className={twMerge(
-                `mr-2 bg-gray-100 rounded-full px-2 py-2  text-2xl w-fit text-gray-300  mx-auto`,
-                classIcon
-              )}
-            >
-              {icon}
+        <div className="items-center gap-6 px-5">
+          <div className="flex justify-center ">
+            {data && data?.photo && !isBrokenPhoto ? (
+              <img
+                src={data?.photo}
+                alt={`${data?.name?.firstname} ${data?.name?.lastname}`}
+                className="w-28 h-28 rounded-full border-4  border-gray-200 object-cover shadow-lg"
+                onError={(e) => {
+                  e.currentTarget.src = "";
+                  setIsBrokenPhoto(true);
+                }}
+              />
+            ) : (
+              <div className="w-28 h-28 flex uppercase items-center justify-center bg-blue-500 text-white text-3xl font-semibold rounded-full shadow-lg">
+                {getInitials(
+                  `${data?.name?.firstname} ${data?.name?.lastname}`
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="text-gray-800 text-center mt-4">
+            <p className="text-3xl font-bold mb-2 capitalize">
+              {data?.name?.firstname || ""} {data?.name?.lastname || ""}
+            </p>
+            {/* <p className="font-bold mb-2">{data?.email}</p> */}
+          </div>
+          <div className="text-gray-800 text-center ">
+            <p className="text-xs uppercase font-semibold text-gray-400 mt-2">
+              Organization
+            </p>
+            <p className="text-lg font-bold text-gray-800 capitalize">
+              {data?.organization}
+            </p>
+            <p className="text-xs uppercase font-semibold text-gray-400 mt-2">
+              Occupation
+            </p>
+            <p className="text-lg font-bold text-gray-800 capitalize">
+              {data?.occupation}
+            </p>
+          </div>
+
+          {eventId && (
+            <div className="text-center mt-8 ">
+              <p className="text-xs uppercase font-semibold text-gray-400 mt-2 ">
+                {eventCategory || ""}
+              </p>
+              <p className="text-lg font-bold text-gray-800 capitalize">
+                {eventName || ""}
+              </p>
             </div>
           )}
+          <div className="flex justify-center">
+            <div className="my-4 border-2 bg-white rounded-lg w-fit p-2">
+              <QRCode
+                value={"ID-" + data?.customId + "-customId" || ""}
+                size={50}
+              />
+            </div>
+          </div>
         </div>
       </div>
     ),

@@ -118,7 +118,7 @@ const BrgyListCard = ({
         ))}
       </div>
       <p className="text-sm text-end text-gray-500 p-4">
-        <span className="font-bold mr-2">Total Selected Voters:</span>{" "}
+        <span className="font-bold mr-2">Total Selected Attendee(s):</span>{" "}
         {totalSelectedCitizens}
       </p>{" "}
     </div>

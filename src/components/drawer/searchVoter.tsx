@@ -2,41 +2,51 @@ import { useEffect, useRef, useState } from "react";
 import { useEvent } from "../../hooks/useEvent";
 import { usePerson } from "../../hooks/usePerson";
 import Drawer from "./../cards/Drawer";
-import { debounce } from "lodash";
 import { Person } from "../../model/personModel";
 import { calculateAge } from "../../utils/useMath";
 import { formatAddressesToText } from "../../utils/useLocation";
 import { Address } from "../../model/collectionModel";
+import { debounce } from "../../utils/useDebounce";
+import { useToast } from "../../context/ToastProvider";
 
 interface AddAttendeesDrawerProps {
   isDrawerOpen: boolean;
   setIsDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  getEvent: (id: string) => Promise<any>;
 }
 
 const SearchVoter = ({
   isDrawerOpen,
   setIsDrawerOpen,
+  getEvent,
 }: AddAttendeesDrawerProps) => {
-  const { createAttendanceMultipleAttendees } = useEvent();
-  const { searchPerson, search } = usePerson();
+  const { createAttendanceMultipleAttendees, eventId } = useEvent();
+  const { searchPerson } = usePerson();
+  const { showToast } = useToast();
   const [searchInput, setSearchInput] = useState<string>("");
   const [selectedPersons, setSelectedPersons] = useState<Person[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [search, setSearch] = useState<Person[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const debounceSearch = useRef(
+    debounce(async (input: string) => {
+      const result = await searchPerson("name.firstname", input);
+      setSearch(result || []);
+      setShowSuggestions(true);
+    }, 1000)
+  ).current;
 
   useEffect(() => {
     if (searchInput.trim() === "") {
       setShowSuggestions(false);
+      setSearch([]);
     } else {
-      debounceSearch();
+      debounceSearch(searchInput);
     }
-  }, [searchInput]);
-
-  const debounceSearch = debounce(() => {
-    searchPerson("name.firstname", searchInput);
-    setShowSuggestions(true);
-  }, 1000);
+  }, [searchInput, debounceSearch]);
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value);
@@ -60,13 +70,37 @@ const SearchVoter = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const selectedLeaderIds = selectedPersons.map((leader) => leader._id);
-      await createAttendanceMultipleAttendees(selectedLeaderIds as string[]);
+      // console.log("Selected Leader IDs:", selectedLeaderIds);
+      const data: any = await createAttendanceMultipleAttendees(
+        selectedLeaderIds as string[],
+        eventId
+      );
+      if (data && data.length > 0) {
+        console.log("Data:", data);
+        showToast("Voters added successfully", "success", "bottom-10 right-10");
+        setIsLoading(false);
+        setIsDrawerOpen(false);
+        getEvent(eventId as string);
+      } else {
+        showToast(
+          "Failed to add attendees because it was existing or invalid request",
+          "error",
+          "bottom-10 right-10"
+        );
+        setIsLoading(false);
+        setIsDrawerOpen(false);
+      }
+      setSelectedPersons([]); // Clear selected persons after submission
     } catch (error) {
       console.error("Failed to add attendees:", error);
+      setIsLoading(false);
+      setIsDrawerOpen(false);
     }
   };
+
   return (
     <div>
       <Drawer
@@ -104,7 +138,7 @@ const SearchVoter = ({
                   >
                     {suggestion.name.firstname} {suggestion.name.lastname} (
                     {calculateAge(suggestion.birthday as any)},{" "}
-                    {formatAddressesToText(suggestion.address as Address[])})
+                    {formatAddressesToText(suggestion.address as Address[])} )
                   </li>
                 ))}
               </ul>
@@ -138,9 +172,36 @@ const SearchVoter = ({
 
           <button
             type="submit"
-            className="mt-6 w-full bg-blue-500 text-white py-2 px-4 rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="mt-6 w-full py-3 px-6 bg-indigo-600 text-white text-xs md:text-sm font-semibold rounded-lg shadow hover:bg-indigo-700 transition duration-300 flex items-center justify-center"
+            disabled={isLoading}
           >
-            Add Attendees
+            {isLoading ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 mr-3 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Please Wait...
+              </>
+            ) : (
+              " Add Attendees"
+            )}
           </button>
         </form>
       </Drawer>

@@ -1,4 +1,4 @@
-import usePropsContext from "../../hooks/usePropsContext";
+import usePropsContext2 from "../../hooks/usePropsContext-v2";
 import { DragAndDropFileUploadProps } from "../../model/propsModel";
 
 const DragAndDropFileUpload = ({
@@ -11,7 +11,7 @@ const DragAndDropFileUpload = ({
     handleDrop,
     handleFileSelect,
     fileInputRef,
-  } = usePropsContext();
+  } = usePropsContext2();
 
   return (
     <div

@@ -1,263 +1,223 @@
-import { API, app, ENDPOINTS } from "../config/app";
-import { User } from "../model/userModel";
+import { API, ENDPOINTS } from "../config/app";
+import { User as Model } from "../model/userModel";
+import { APIService } from "./apiService";
 
-export const userService = {
-  GETALL,
-  GET,
-  POST,
-  PUT,
-  DELETE,
-  SEARCH,
-  LOGIN,
-  LOGOUT,
-  CHECKLOGIN,
-};
+export class UserService extends APIService {
+  private collection: string;
+  private endpoint: string;
+  private selectFields: Set<string>;
+  private sortFields: Set<string>;
+  private limitValue: number | undefined;
+  private populateFields: string[];
+  private pageValue: number | undefined;
+  private queryParams: Record<string, any> = {};
+  private method: "GET" | "POST" | "PUT" | "DELETE" = "GET";
+  private data: Record<string, any> = {}; // Holds the request body data
 
-const SERVICE_CONFIG = {
-  COLLECTION: "user",
-  REQUIREMENTS: {
-    GETALL:
-      "?select=name&select=email&select=customId&select=precinct&select=photo&select=address&select=contact&select=birthday&select=age&select=sex&select=status&select=role&select=type&select=category",
-    GET: "?select=name&select=email&select=customId&select=precinct&select=photo&select=address&select=contact&select=birthday&select=age&select=sex&select=status&select=role&select=type&select=category",
-    POST: "",
-    PUT: "",
-    DELETE: "",
-    SEARCH: "",
-  },
-};
+  constructor(collection: string, endpoint: string = "") {
+    super();
+    this.collection = collection;
+    this.endpoint = endpoint;
+    this.selectFields = new Set();
+    this.sortFields = new Set();
+    this.populateFields = [];
+  }
 
-async function GET(id: string): Promise<User | undefined> {
-  try {
-    if (app.control.useTesting) {
-    } else {
-      const response = await fetch(
-        `${
-          API.BASE_URL +
-          ENDPOINTS.BASE +
-          SERVICE_CONFIG.COLLECTION +
-          ENDPOINTS.GET_BY_ID +
-          id +
-          "/" +
-          SERVICE_CONFIG.REQUIREMENTS.GET
-        }`
+  LOGIN(email: string, password: string): this {
+    this.endpoint = "/login";
+    this.method = "POST";
+    this.data = { email, password };
+    return this;
+  }
+
+  GETALL(): this {
+    this.endpoint = "/get/all";
+    this.method = "GET";
+    return this;
+  }
+
+  GET(id: string): this {
+    this.endpoint = `/get/${id}`;
+    this.method = "GET";
+    return this;
+  }
+
+  POST(data: Record<string, any> = {}): this {
+    this.endpoint = "/create";
+    this.method = "POST";
+    this.data = data;
+    return this;
+  }
+
+  PUT(data: Record<string, any> = {}): this {
+    this.endpoint = "/update";
+    this.method = "PUT";
+    this.data = data;
+    return this;
+  }
+
+  DELETE(): this {
+    this.endpoint = "/delete";
+    this.method = "DELETE";
+    return this;
+  }
+
+  SEARCH(): this {
+    this.endpoint = "/search";
+    this.method = "POST";
+    return this;
+  }
+
+  COUNT(): this {
+    this.endpoint = "/count";
+    this.method = "POST";
+    return this;
+  }
+
+  queryBy(field: string, value: any): this {
+    this.queryParams[field] = value;
+    return this;
+  }
+
+  select(fields: string[]): this {
+    fields.forEach((field) => this.selectFields.add(field));
+    return this;
+  }
+
+  sort(field: string): this {
+    this.sortFields.add(field);
+    return this;
+  }
+
+  limit(limit: number): this {
+    this.limitValue = limit;
+    return this;
+  }
+
+  page(page: number): this {
+    this.queryParams["page"] = page;
+    return this;
+  }
+
+  populate(populates: string[]): this {
+    this.populateFields = populates;
+    return this;
+  }
+
+  private buildQueryParams(): string {
+    const params = new URLSearchParams();
+
+    if (this.selectFields.size > 0) {
+      this.selectFields.forEach((field) => params.append("select", field));
+    }
+
+    if (this.sortFields.size > 0) {
+      params.append("sort", Array.from(this.sortFields).join(","));
+    }
+
+    if (this.limitValue !== undefined) {
+      params.append("limit", this.limitValue.toString());
+    }
+
+    if (this.pageValue !== undefined) {
+      params.append("page", this.pageValue.toString());
+    }
+
+    // Update how populate fields are added to the query
+    if (this.populateFields.length > 0) {
+      this.populateFields.forEach((field) =>
+        params.append("populateArray[]", field)
       );
+    }
+
+    // Add other query params
+    Object.keys(this.queryParams).forEach((key) => {
+      params.append(key, this.queryParams[key]);
+    });
+
+    return params.toString();
+  }
+
+  public getBody(): Record<string, any> {
+    const body: Record<string, any> = { query: { ...this.queryParams } };
+
+    // Add select fields to the body as a space-separated string if API expects it
+    if (this.selectFields.size > 0) {
+      body.select = Array.from(this.selectFields).join(" ");
+    }
+
+    // Add sort fields to the body
+    if (this.sortFields.size > 0) {
+      body.sort = Array.from(this.sortFields).join(" ");
+    }
+
+    if (this.pageValue !== undefined) {
+      body.page = this.pageValue;
+    }
+
+    // Add limit to the body
+    if (this.limitValue !== undefined) {
+      body.limit = this.limitValue;
+    }
+
+    // Add populate fields to the body
+    if (this.populateFields.length > 0) {
+      body.populateArray = this.populateFields;
+    }
+
+    // Include the data if it's set
+    if (this.data && Object.keys(this.data).length > 0) {
+      return this.data;
+    }
+
+    // console.log("Generated Body:", body);
+    return body;
+  }
+
+  public async fetchData(): Promise<Model | Model[] | undefined> {
+    let url = `${API.BASE_URL}${ENDPOINTS.BASE}${this.collection}${this.endpoint}`;
+
+    // Add query params to the URL if it's a GET request
+    if (this.method === "GET" || this.method === "DELETE") {
+      const queryString = this.buildQueryParams();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+    }
+
+    // console.log("body", JSON.stringify(this.getBody()));
+    const options: RequestInit = {
+      method: this.method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body:
+        (this.method === "POST" || this.method === "PUT") &&
+        Object.keys(this.getBody()).length > 0
+          ? JSON.stringify(this.getBody())
+          : undefined,
+    };
+
+    try {
+      const response = await fetch(url, options);
       if (!response.ok) {
-        throw new Error(`Failed to fetch result with id: ${id}`);
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to fetch data: ${response.status} ${response.statusText}. Error: ${errorText}`
+        );
       }
-      const result: User = await response.json();
-      return result;
+
+      const data = await response.json();
+      return this.method === "GET" && this.endpoint.startsWith("/get/")
+        ? (data as Model)
+        : (data as Model[]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      throw error;
     }
-  } catch (error) {
-    console.error(error);
-    throw error;
   }
-}
 
-async function GETALL(): Promise<User[] | undefined> {
-  try {
-    if (app.control.useTesting) {
-      // Return mock data
-    } else {
-      const response = await fetch(
-        `${
-          API.BASE_URL +
-          ENDPOINTS.BASE +
-          SERVICE_CONFIG.COLLECTION +
-          ENDPOINTS.GET_ALL +
-          SERVICE_CONFIG.REQUIREMENTS.GETALL
-        }`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch surveys");
-      }
-      // Extract JSON data
-      const data: User[] = await response.json();
-      return data;
-    }
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-}
-
-async function POST(data: User): Promise<User | undefined> {
-  try {
-    const response = await fetch(
-      `${API.BASE_URL}${ENDPOINTS.BASE}${SERVICE_CONFIG.COLLECTION}${ENDPOINTS.CREATE}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: User = await response.json();
-    return result;
-  } catch (error) {
-    console.error("Error creating queue:", error);
-    throw error;
-  }
-}
-
-async function PUT(data: User): Promise<User> {
-  try {
-    const response = await fetch(
-      `${API.BASE_URL}${ENDPOINTS.BASE}${SERVICE_CONFIG.COLLECTION}${ENDPOINTS.UPDATE}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const responseData: User = await response.json();
-    return responseData;
-  } catch (error) {
-    console.error("Error updating queue:", error);
-    throw error;
-  }
-}
-
-async function DELETE(id: string): Promise<User> {
-  try {
-    const response = await fetch(
-      `${API.BASE_URL}${ENDPOINTS.BASE}${
-        SERVICE_CONFIG.COLLECTION
-      }${ENDPOINTS.DELETE.replace(":id", id)}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id }),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: User = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error creating user:", error);
-    throw error;
-  }
-}
-
-async function LOGIN(credentials: {
-  email: string;
-  password: string;
-}): Promise<{ user: User; token: string }> {
-  try {
-    const response = await fetch(
-      `${API.BASE_URL}${ENDPOINTS.BASE}${SERVICE_CONFIG.COLLECTION}${ENDPOINTS.LOGIN}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(credentials),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error logging in:", error);
-    throw error;
-  }
-}
-
-async function LOGOUT(): Promise<User> {
-  try {
-    const response = await fetch(
-      `${API.BASE_URL}${ENDPOINTS.BASE}${SERVICE_CONFIG.COLLECTION}${ENDPOINTS.LOGOUT}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: User = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error creating user:", error);
-    throw error;
-  }
-}
-
-async function CHECKLOGIN(): Promise<User> {
-  try {
-    const response = await fetch(
-      `${API.BASE_URL}${ENDPOINTS.BASE}${SERVICE_CONFIG.COLLECTION}${ENDPOINTS.CHECKLOGIN}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: User = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error creating user:", error);
-    throw error;
-  }
-}
-
-async function SEARCH(
-  query: string,
-  type: string,
-  useType: boolean
-): Promise<User[] | undefined> {
-  try {
-    if (app.control.useTesting) {
-    } else {
-      const url = useType
-        ? `${API.BASE_URL}${SERVICE_CONFIG.COLLECTION}${ENDPOINTS.BASE}${ENDPOINTS.SEARCH}?search=${query}&type=${type}&sort=name.firstname&limit=5`
-        : `${API.BASE_URL}${SERVICE_CONFIG.COLLECTION}${ENDPOINTS.BASE}${ENDPOINTS.SEARCH}?search=${query}&sort=name.firstname&limit=5`;
-
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`Failed to search surveys: ${response.statusText}`);
-      }
-
-      const result: User[] = await response.json();
-
-      return result;
-    }
-  } catch (error) {
-    console.error("Error in SEARCH function:", error);
-
-    throw error;
+  async execute(): Promise<Model | Model[] | undefined> {
+    return this.fetchData();
   }
 }

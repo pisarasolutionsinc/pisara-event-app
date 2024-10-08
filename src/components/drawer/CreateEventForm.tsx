@@ -12,6 +12,11 @@ import { useToast } from "../../context/ToastProvider";
 import LeaderSelector from "../input/LeaderSelector";
 import UploadCard from "../cards/UploadCard";
 import { debounce } from "../../utils/useDebounce";
+import {
+  removeFileFromCloudinary,
+  uploadFileToCloudinary,
+} from "../../services/cloudinaryService";
+
 interface VoterDrawerProps {
   isDrawerOpen: boolean;
   setIsDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -48,10 +53,13 @@ const CreateEventForm = ({
   const [startTime, setStartTime] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
   const [link, setLink] = useState<string>("");
+  const [organizer, setOrganizer] = useState<string>("");
+  const [publicId, setPublicId] = useState<string>("");
   const { showToast } = useToast();
 
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Debounced leader search
   useEffect(() => {
     const debouncedFetchSuggestions = debounce(async () => {
       if (leaderInput.trim() === "") {
@@ -84,17 +92,59 @@ const CreateEventForm = ({
     setLeaderInput(value);
   };
 
-  const handleFileUpload = (files: File[] | null) => {
-    if (files) {
+  // Upload cover photo to Cloudinary
+  const handleFileUpload = async (files: File[] | null) => {
+    if (files && files.length > 0) {
       const file = files[0];
-      const reader = new FileReader();
-
-      reader.onloadend = () => {
-        setCoverPhoto(reader.result as string | null);
-      };
-
-      reader.readAsDataURL(file);
+      try {
+        const response = await uploadFileToCloudinary(file, "events");
+        setCoverPhoto(response.secure_url);
+        setPublicId(response.public_id);
+        showToast(
+          "Cover photo uploaded successfully",
+          "success",
+          "bottom-10 right-10"
+        );
+      } catch (error) {
+        console.error("Failed to upload cover photo:", error);
+        showToast(
+          "Failed to upload cover photo",
+          "error",
+          "bottom-10 right-10"
+        );
+      }
     }
+  };
+
+  const handleDeleteFile = () => {
+    try {
+      console.log(publicId);
+      const response = removeFileFromCloudinary(publicId as string);
+      console.log(response, "response");
+      if (response) {
+        setCoverPhoto(null);
+        setPublicId("");
+        console.log("File deleted successfully:", response);
+        showToast(
+          "Cover photo deleted successfully",
+          "success",
+          "bottom-10 right-10"
+        );
+      } else {
+        setCoverPhoto(null);
+        setPublicId("");
+        console.error("Failed to delete file");
+        showToast(
+          "Failed to delete cover photo",
+          "error",
+          "bottom-10 right-10"
+        );
+      }
+    } catch (error) {
+      console.error("Error during file deletion:", error);
+      showToast("Failed to delete cover photo", "error", "bottom-10 right-10");
+    }
+    setCoverPhoto(null);
   };
 
   const handleSuggestionClick = (suggestion: Person) => {
@@ -184,15 +234,21 @@ const CreateEventForm = ({
       startTime: startTime ? convertToISO(date, startTime) : "",
       endTime: endTime ? convertToISO(date, endTime) : "",
       location: [location],
-      coverPhoto: coverPhoto ?? "",
+      coverPhoto: coverPhoto ?? "", // Use Cloudinary URL
       photos:
         files.length > 0 ? files.map((file) => URL.createObjectURL(file)) : [],
       leaders: (selectedLeaders.map((leader) => leader._id) as any) || [],
+      organizer,
       link,
       totalExpenses: 0,
       status: "pending" as EventStatus,
       category: "other" as EventCategory,
       totalAttendees: 0,
+      template: {
+        id: [],
+        welcome: [],
+        certificate: ["66ff7b636d0f5e00279b3164"],
+      },
     };
 
     try {
@@ -208,6 +264,7 @@ const CreateEventForm = ({
         setFiles([]);
         setSelectedLeaders([]);
         setLeaderInput("");
+        setOrganizer("");
         setShowSuggestions(false);
         setLocation({
           country: "Philippines",
@@ -232,7 +289,7 @@ const CreateEventForm = ({
       }
     } catch (error) {
       console.error("Failed to create event:", error);
-      showToast("Failed to create event", "error", "top-10 right-10");
+      showToast("Failed to create event", "error", "bottom-10 right-10");
     } finally {
       setIsLoading(false);
     }
@@ -269,7 +326,11 @@ const CreateEventForm = ({
         </div>
 
         {activeTab === "upload" ? (
-          <UploadCard onFileUpload={handleFileUpload} variant="image" />
+          <UploadCard
+            onFileUpload={handleFileUpload}
+            variant="image"
+            handleDelete={handleDeleteFile}
+          />
         ) : (
           <Input
             label="Photo URL (optional)"
@@ -280,7 +341,6 @@ const CreateEventForm = ({
             onChange={(e) => setCoverPhoto(e.target.value)}
           />
         )}
-
         {files.length > 0 && activeTab === "upload" && (
           <div className="mt-2">
             {files.map((file) => (
@@ -305,6 +365,15 @@ const CreateEventForm = ({
           row={5}
           inputType={"text"}
           onChange={(e) => setDescription(e.target.value)}
+          classParent="-mb-2"
+        />
+        <Input
+          label="Organizer (optional)"
+          value={organizer}
+          componentType={"input"}
+          variant="inputwithoverlapping"
+          inputType={"text"}
+          onChange={(e) => setOrganizer(e.target.value)}
         />
 
         <LeaderSelector
@@ -351,13 +420,12 @@ const CreateEventForm = ({
           </div>
         </div>
 
-        <div className="mt-4">
-          <div className="mt-1">
-            <LocationPicker
-              onLocationChange={handleLocationChange}
-              variant="grid"
-            />
-          </div>
+        <div className="mt-1">
+          <label className=" text-xs  text-gray-400">Location</label>
+          <LocationPicker
+            onLocationChange={handleLocationChange}
+            variant="grid"
+          />
         </div>
 
         <button

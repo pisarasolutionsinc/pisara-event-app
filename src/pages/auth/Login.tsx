@@ -35,9 +35,20 @@ const LoginPage = () => {
       <div className="relative hidden md:block w-full md:w-2/3 h-full">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${ASSET.ELECTION_BG})` }}
+          style={{ backgroundImage: `url(${ASSET.LOGIN_BG})` }}
         ></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent"></div>
+        <div className="absolute bottom-[10%] left-[10%]  text-white  font-bold flex items-center gap-4">
+          <div className="flex space-x-4">
+            <img src={ASSET.LOGIN_LOGO_2} alt="" className="w-32 h-32" />
+            <div className="bg-white/60 w-0.5 h-[150px]  flex items-center justify-center"></div>
+            <img src={ASSET.LOGIN_LOGO} alt="" className="w-32 h-32" />
+          </div>
+          <div>
+            <h1 className="text-6xl ">KADIWA EVENT</h1>
+            <p className="text-xs text-gray-300">Powered by PISARA</p>
+          </div>
+        </div>
       </div>
 
       <div className="flex-1 flex items-center justify-center bg-white p-6 md:p-12">

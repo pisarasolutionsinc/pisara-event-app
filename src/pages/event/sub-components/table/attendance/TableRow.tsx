@@ -12,6 +12,7 @@ import LocationPicker from "../../../../../components/filter/LocationPicker";
 import { Address } from "../../../../../model/collectionModel";
 import { displayValue } from "./../../../../../utils/useFormatter";
 import { usePerson } from "../../../../../hooks/usePerson";
+import { Link } from "react-router-dom";
 
 interface TableRowProps {
   event: any;
@@ -91,7 +92,6 @@ const TableRow = ({
     barangay: "",
     period: { start: "", end: "" },
   });
-  console.log(location);
   const { getLocal } = useLocalStorage();
   const { showToast } = useToast();
 
@@ -201,7 +201,7 @@ const TableRow = ({
         // console.log(response);
         if (response) {
           showToast(
-            "Expense added successfully",
+            "Expense updated successfully",
             "success",
             "bottom-10 right-10"
           );
@@ -266,6 +266,7 @@ const TableRow = ({
       setFormChanged(false); // Reset the change state after save
       setLoading(false);
       showToast("Changes saved successfully", "success", "bottom-10 right-10");
+      getEvent && getEvent(event._id);
     } catch (error) {
       setLoading(false);
       showToast("Failed to save changes", "error", "bottom-10 right-10");
@@ -279,12 +280,12 @@ const TableRow = ({
           <form action="" className="xl:border-r pr-4">
             <div className="grid grid-cols-3 gap-4 border-b py-2">
               <div>
-                <label className="block text-xs font-medium text-gray-300">
+                <label className="block text-xs  font-medium text-gray-300">
                   Last name
                 </label>
                 <input
                   type="text"
-                  className="mt-1 block w-full border-gray-300 rounded-md focus:border px-4 py-2 focus:outline-none focus:ring-0"
+                  className="mt-1 block w-full capitalize border-gray-300 rounded-md focus:border px-4 py-2 focus:outline-none focus:ring-0"
                   value={formData.name?.lastname}
                   onChange={(e) =>
                     handleFieldChange("name.lastname", e.target.value)
@@ -297,7 +298,7 @@ const TableRow = ({
                 </label>
                 <input
                   type="text"
-                  className="mt-1 block w-full border-gray-300 rounded-md focus:border px-4 py-2 focus:outline-none focus:ring-0"
+                  className="mt-1 block w-full capitalize border-gray-300 rounded-md focus:border px-4 py-2 focus:outline-none focus:ring-0"
                   value={formData.name?.firstname}
                   onChange={(e) =>
                     handleFieldChange("name.firstname", e.target.value)
@@ -311,7 +312,7 @@ const TableRow = ({
                 <input
                   type="text"
                   value={formData.name?.middlename}
-                  className="mt-1 block w-full border-gray-300 rounded-md focus:border px-4 py-2 focus:outline-none focus:ring-0"
+                  className="mt-1 block w-full border-gray-300 rounded-md focus:border px-4 py-2 focus:outline-none focus:ring-0 capitalize"
                   onChange={(e) =>
                     handleFieldChange("name.middlename", e.target.value)
                   }
@@ -410,6 +411,29 @@ const TableRow = ({
                 </option>
               ))}
             </select>
+          </div>
+          <div className="mt-4 ">
+            <label className="block text-xs font-medium text-gray-300">
+              Generator
+            </label>
+            <div className="flex gap-4 w-full py-4">
+              <div>
+                <Link
+                  to={`/event/${record.event}/user/${record.voter?._id}?access=private`}
+                  className="border-blue-500 border text-blue-600 hover:bg-blue-500 hover:text-white py-2 px-4 rounded-md"
+                >
+                  ID
+                </Link>
+              </div>
+              <div>
+                <Link
+                  to={`/event/${record.event}/user/${record.voter?._id}/certificate?access=private`}
+                  className=" border-green-500 border text-green-600 hover:bg-green-500 hover:text-white py-2 px-4 rounded-md"
+                >
+                  Certificate
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -520,7 +544,7 @@ const TableRow = ({
                       }}
                     />
                   ) : (
-                    <div className="w-24 h-24 flex items-center justify-center bg-gray-500 text-white text-2xl font-bold rounded-full">
+                    <div className="w-24 h-24 flex items-center uppercase justify-center bg-gray-500 text-white text-2xl font-bold rounded-full">
                       {getInitials(
                         `${record.voter?.name?.firstname || ""} ${
                           record.voter?.name?.lastname || ""

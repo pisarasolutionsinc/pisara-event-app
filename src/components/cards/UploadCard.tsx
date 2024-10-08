@@ -13,12 +13,14 @@ interface UploadCardVariantProps extends DragAndDropFileUploadProps {
     | "dark"
     | "image";
   icon?: React.ReactNode;
+  handleDelete?: () => void;
 }
 
 const UploadCard = ({
   onFileUpload,
   variant = "default",
   icon,
+  handleDelete,
 }: UploadCardVariantProps) => {
   const {
     dragging,
@@ -188,9 +190,11 @@ const UploadCard = ({
           dragging ? "border-blue-600" : "border-gray-400"
         }`}
       >
-        <p className="mb-4 font-semibold text-gray-500">
-          Drag and drop your files here or click to upload
-        </p>
+        {selectedImage === null && (
+          <p className="mb-4 font-semibold text-gray-500">
+            Drag and drop your files here or click to upload
+          </p>
+        )}
         <input
           type="file"
           onChange={handleImageSelect} // Use the new image select handler
@@ -200,11 +204,25 @@ const UploadCard = ({
           multiple
         />
         {selectedImage ? ( // Display the selected image if it exists
-          <img
-            src={selectedImage}
-            alt="Selected"
-            className="w-full h-auto object-cover mb-4 rounded-lg"
-          />
+          <div className="relative w-full max-h-[10rem] mb-4">
+            <img
+              src={selectedImage}
+              alt="Selected"
+              className="w-full max-h-[10rem]  object-cover rounded-lg"
+            />
+            <button
+              onClick={() => {
+                setSelectedImage(null);
+                if (handleDelete) {
+                  // Check if handleDelete is defined
+                  handleDelete(); // Call the delete function
+                }
+              }}
+              className="absolute top-2 right-2 bg-red-500 text-white rounded-full py-1 px-3 hover:bg-red-700"
+            >
+              X
+            </button>
+          </div>
         ) : (
           <RiUploadCloud2Fill className="text-6xl text-gray-300 mx-auto" />
         )}

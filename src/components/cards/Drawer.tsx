@@ -29,7 +29,7 @@ function Drawer({
       )}
 
       <div
-        className={`w-[100vw] sm:w-[75vw] md:w-[55vw] lg:w-[45vw] xl:w-[35vw] fixed top-0 right-0 z-50 h-full transform p-5 rounded-tl-3xl ${bgColor} space-y-5 ${
+        className={`w-[100vw]  lg:w-[45vw] xl:w-[35vw] fixed top-0 right-0 z-50 h-full transform p-5 rounded-tl-3xl ${bgColor} space-y-5 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         } transition-transform duration-300 ease-in-out`}
       >
