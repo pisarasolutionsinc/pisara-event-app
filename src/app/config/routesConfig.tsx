@@ -1,33 +1,26 @@
 import { RouteObject } from "react-router-dom";
-// import { MainLayout } from "../layouts/MainLayout";
-import { ScannerLayout } from "../layouts/ScannerLayout";
-import LoginPage from "../pages/auth/Login";
-// import { Encoding } from "../pages/Encoding";
-import EventPage from "../pages/event/Events";
-// import SurveyForm from "../pages/Form";
-// import SurveyFormEditPage from "../pages/form/Edit";
-// import MapPage from "../pages/map/Map";
-// import ComingSoon from "../pages/others/ComingSoon";
-// import CloudinaryUploadPage from "../pages/test/cloudinaryUploadPage";
-// import InfiniteScroll from "../pages/test/InifitineScrolling";
-// import VotersPage from "../pages/voters/Voters";
-// import { FormLayout } from "../layouts/FormLayout";
-// import { PublicFormLayout } from "../layouts/PublicFormLayout";
-import { CounterLayout } from "../layouts/CouterLayout";
-import WelcomePage from "../pages/welcome/Welcome";
-import RegistrationPage from "../pages/register/RegistrationPage";
-import { IDPage } from "../pages/id/IDPage";
-import { CertificatePage } from "../pages/certificate/certificatePage";
-import { CertificateLayout } from "../layouts/CertificateLayout";
-
+import LoginPage from "../../pages/auth/Login";
+import RegistrationPage from "../../pages/register/RegistrationPage";
+import { IDPage } from "../../pages/id/IDPage";
+import { CounterLayout } from "../../layouts/CouterLayout";
+import EventPage from "../../pages/event/Events";
+import { ScannerLayout } from "../../layouts/ScannerLayout";
+import { CertificateLayout } from "../../layouts/CertificateLayout";
+import WelcomePage from "../../pages/welcome/Welcome";
+import { CertificatePage } from "../../pages/certificate/certificatePage";
+import WarningPage from "../pages/error/WarningPage";
 const routes = {
-  guest: [
+  GUEST: [
     {
-      path: "/",
+      path: "*",
+      element: <WarningPage />,
+    },
+    {
+      path: "/:projectKey/event/",
       element: <LoginPage />,
     },
     {
-      path: "*",
+      path: "/:projectKey/event/login",
       element: <LoginPage />,
     },
     {
@@ -43,7 +36,7 @@ const routes = {
       element: <IDPage />,
     },
   ],
-  protected: [
+  PROTECTED: [
     {
       element: <CounterLayout />,
       children: [
@@ -93,5 +86,4 @@ const routes = {
   ] as RouteObject[],
 };
 
-// Cast the routes object to the desired type
 export const appRoutes = routes;

@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { ASSET } from "../../config/assets";
-import { useAuth } from "../../hooks/useAuth";
+
 import { useToast } from "../../context/ToastProvider";
 import { FiEye, FiEyeOff } from "react-icons/fi"; // Import icons
+import { useAuth } from "../../app/hooks/useAuth";
 
 const LoginPage = () => {
   const { Login } = useAuth();
@@ -19,6 +20,8 @@ const LoginPage = () => {
 
     try {
       const response: any = await Login(email, password);
+
+      console.log("Login response:", response);
       if (response) {
         showToast("Login successful", "success", "top-10 right-10");
         location.reload();

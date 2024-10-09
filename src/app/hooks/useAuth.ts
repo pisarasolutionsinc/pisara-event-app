@@ -12,15 +12,15 @@ interface Auth {
 
 export const useAuth = (): {
   auth: Auth;
-  Login: (email: string, password: string) => Promise<void>;
+  Login: (email: string, password: string) => Promise<Auth | undefined>;
   getUser: (id: string) => Promise<any | null>;
+  Logout: () => Promise<any | null>;
 } => {
   const { setCookie, getCookie } = useCookie();
   const { saveSession, getSession } = useSessionStorage();
-  const { saveLocal, getLocal } = useLocalStorage();
-  const userService = new UserService("user");
+  const { saveLocal } = useLocalStorage();
+  const userService = new UserService();
 
-  // Initialize auth state with default values
   const [auth, setAuth] = useState<Auth>({
     isAuthenticated: false,
     token: null,
@@ -28,21 +28,16 @@ export const useAuth = (): {
   });
 
   useEffect(() => {
-    // Retrieve token and session on component mount
     const storedToken = getCookie("token");
     const session = getSession("auth");
-    const local = getLocal("auth");
 
     if (session && session.token) {
-      // Set auth state based on session storage
-      const data: Auth = {
+      setAuth({
         isAuthenticated: true,
-        token: session.token ? session.token : local.token,
-        user: session.user ? session.user : local.user,
-      };
-      setAuth(data);
+        token: session.token,
+        user: session.user,
+      });
     } else if (storedToken) {
-      // Update auth state if token is available from cookies
       setAuth((prevAuth) => ({
         ...prevAuth,
         token: storedToken,
@@ -51,35 +46,60 @@ export const useAuth = (): {
     }
   }, []);
 
-  const Login = async (email: string, password: string) => {
+  const Login = async (
+    email: string,
+    password: string
+  ): Promise<Auth | undefined> => {
     try {
-      const result: any = await userService.LOGIN(email, password).execute();
+      const credentials = { email, password };
+      const result: any = await userService.login(credentials);
 
       console.log("Login result:", result);
 
-      if (result && result.user && result.token) {
-        // Update auth state with user and token information
-        const newAuth = {
+      if (result && result.token && result.user) {
+        const newAuth: Auth = {
           isAuthenticated: true,
           token: result.token,
           user: result.user,
         };
         setAuth(newAuth);
-
-        // Persist auth data in cookie and session storage
         setCookie("token", result.token);
         saveSession("auth", newAuth);
         saveLocal("auth", newAuth);
 
-        return newAuth as any;
+        return newAuth;
       } else {
         console.error("Invalid credentials");
         setAuth({ isAuthenticated: false, token: null, user: null });
         setCookie("token", "");
-        return null;
+        return undefined;
       }
     } catch (error) {
       console.error("Login failed:", error);
+      setAuth({ isAuthenticated: false, token: null, user: null });
+      setCookie("token", "");
+      return undefined;
+    }
+  };
+
+  const Logout = async () => {
+    try {
+      const result: any = await userService.logout();
+      console.log(result);
+      if (result) {
+        setAuth({ isAuthenticated: false, token: null, user: null });
+        setCookie("token", "");
+        saveSession("auth", {
+          isAuthenticated: false,
+          token: null,
+          user: null,
+        });
+        saveLocal("auth", { isAuthenticated: false, token: null, user: null });
+
+        return result;
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
       return null;
     }
   };
@@ -87,10 +107,8 @@ export const useAuth = (): {
   const getUser = async (id: string) => {
     try {
       const result = await userService
-        .GET(id)
-        .select(["name", "email", "metadata"])
-        .populate([])
-        .execute();
+        .select(["id", "firstname", "email"])
+        .get(id);
       return result;
     } catch (error) {
       console.error("Get user failed:", error);
@@ -101,6 +119,7 @@ export const useAuth = (): {
   return {
     auth,
     Login,
-    getUser, // Return getUser here
+    getUser,
+    Logout,
   };
 };

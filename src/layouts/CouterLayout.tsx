@@ -1,10 +1,27 @@
 import { Outlet } from "react-router-dom";
 import { TopNavigation } from "../components/navigation/TopNavigation";
 import { ASSET } from "../config/assets";
-import { useLocalStorage } from "../utils/useLocalStorage";
+import { useLocalStorage } from "../app/utils/useLocalStorage";
+import { useAuth } from "../app/hooks/useAuth";
+import { useEffect } from "react";
 
 export const CounterLayout = () => {
+  const { Logout, getUser } = useAuth();
   const { getLocal } = useLocalStorage();
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const user = await getUser(getLocal("auth").user.id);
+        console.log(user);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetch();
+  }, []);
+
   return (
     <div className="flex">
       <div className="flex flex-col min-h-screen flex-1">
@@ -42,9 +59,12 @@ export const CounterLayout = () => {
                   <button
                     className="ml-4 text-red-500 border border-red-500 px-4 py-1 rounded-full hover:bg-red-500 hover:text-white transition"
                     onClick={() => {
-                      localStorage.removeItem("auth");
-                      sessionStorage.removeItem("auth");
-                      window.location.reload();
+                      Logout();
+                      setTimeout(() => {
+                        localStorage.removeItem("auth");
+                        sessionStorage.removeItem("auth");
+                        window.location.reload();
+                      }, 3000);
                     }}
                   >
                     Logout
