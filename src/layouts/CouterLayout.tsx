@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useParams } from "react-router-dom";
 import { TopNavigation } from "../components/navigation/TopNavigation";
 import { ASSET } from "../config/assets";
 import { useLocalStorage } from "../app/utils/useLocalStorage";
@@ -8,6 +8,7 @@ import { useEffect } from "react";
 export const CounterLayout = () => {
   const { Logout, getUser } = useAuth();
   const { getLocal } = useLocalStorage();
+  const { projectKey } = useParams();
 
   useEffect(() => {
     const fetch = async () => {
@@ -42,9 +43,9 @@ export const CounterLayout = () => {
               </div>
             </TopNavigation.Item>
 
-            <TopNavigation.Item href="/dashboard">
+            <TopNavigation.Item href={`${projectKey}/event`}>
               <div className="flex justify-between items-center w-full">
-                <div className="flex items-center gap-4  border rounded-full px-4 py-1">
+                <div className="flex items-center gap-4   px-4 py-1">
                   {/* Initials Circle */}
                   <div className="flex items-center justify-center h-10 w-10 rounded-full bg-gray-300 text-gray-800">
                     {getLocal("auth").user.firstname[0]}

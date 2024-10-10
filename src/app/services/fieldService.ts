@@ -1,10 +1,9 @@
-// UserService.ts
 import { APIService } from "./APIService";
 import { useAsyncFetch } from "../utils/useFetch";
 import { API_ENDPOINTS } from "../config/endpointConfig";
 import { APP_CONSTANTS } from "../config/config";
 
-export class ProjectService extends APIService {
+export class FieldService extends APIService {
   private asyncFetch;
 
   constructor() {
@@ -14,7 +13,7 @@ export class ProjectService extends APIService {
 
   async create(data: any) {
     return this.asyncFetch.post(
-      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.PROJECT.CREATE}`,
+      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.FIELD.CREATE}`,
       {
         body: JSON.stringify(data),
         headers: {
@@ -26,7 +25,7 @@ export class ProjectService extends APIService {
   }
 
   async get(id: string) {
-    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.PROJECT.GET.replace(
+    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.FIELD.GET.replace(
       ":id",
       id
     )}${this.query}`;
@@ -42,7 +41,7 @@ export class ProjectService extends APIService {
   }
 
   async update(id: string, data: any) {
-    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.PROJECT.UPDATE.replace(
+    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.FIELD.UPDATE.replace(
       ":id",
       id
     )}`;
@@ -56,7 +55,7 @@ export class ProjectService extends APIService {
   }
 
   async delete(id: string) {
-    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.PROJECT.REMOVE.replace(
+    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.FIELD.REMOVE.replace(
       ":id",
       id
     )}`;
@@ -85,9 +84,9 @@ export class ProjectService extends APIService {
     );
 
     return this.asyncFetch.post(
-      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.PROJECT.SEARCH}`,
+      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.FIELD.SEARCH}`,
       {
-        body: JSON.stringify(body), // Convert the body to JSON
+        body: JSON.stringify(body),
         headers: {
           [APP_CONSTANTS.HEADER.KEY.CONTENT_TYPE]:
             APP_CONSTANTS.HEADER.VALUE.APPLICATION_JSON,

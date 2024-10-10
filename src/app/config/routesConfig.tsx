@@ -3,12 +3,12 @@ import LoginPage from "../../pages/auth/Login";
 import RegistrationPage from "../../pages/register/RegistrationPage";
 import { IDPage } from "../../pages/id/IDPage";
 import { CounterLayout } from "../../layouts/CouterLayout";
-import EventPage from "../../pages/event/Events";
 import { ScannerLayout } from "../../layouts/ScannerLayout";
 import { CertificateLayout } from "../../layouts/CertificateLayout";
 import WelcomePage from "../../pages/welcome/Welcome";
 import { CertificatePage } from "../../pages/certificate/certificatePage";
 import WarningPage from "../pages/error/WarningPage";
+import { EventPage } from "../pages/protected/event/EventPage";
 const routes = {
   GUEST: [
     {
@@ -41,11 +41,7 @@ const routes = {
       element: <CounterLayout />,
       children: [
         {
-          path: "/",
-          element: <EventPage />,
-        },
-        {
-          path: "/events",
+          path: "/:projectKey/event/",
           element: <EventPage />,
         },
         {

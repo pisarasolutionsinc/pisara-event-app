@@ -1,10 +1,9 @@
-// UserService.ts
 import { APIService } from "./APIService";
 import { useAsyncFetch } from "../utils/useFetch";
 import { API_ENDPOINTS } from "../config/endpointConfig";
 import { APP_CONSTANTS } from "../config/config";
 
-export class ProjectService extends APIService {
+export class ItemTypeService extends APIService {
   private asyncFetch;
 
   constructor() {
@@ -14,7 +13,7 @@ export class ProjectService extends APIService {
 
   async create(data: any) {
     return this.asyncFetch.post(
-      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.PROJECT.CREATE}`,
+      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.ITEM_TYPE.CREATE}`,
       {
         body: JSON.stringify(data),
         headers: {
@@ -26,7 +25,7 @@ export class ProjectService extends APIService {
   }
 
   async get(id: string) {
-    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.PROJECT.GET.replace(
+    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.ITEM_TYPE.GET.replace(
       ":id",
       id
     )}${this.query}`;
@@ -42,10 +41,9 @@ export class ProjectService extends APIService {
   }
 
   async update(id: string, data: any) {
-    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.PROJECT.UPDATE.replace(
-      ":id",
-      id
-    )}`;
+    const url = `${
+      API_ENDPOINTS.BASEURL
+    }${API_ENDPOINTS.ITEM_TYPE.UPDATE.replace(":id", id)}`;
     return this.asyncFetch.put(url, {
       body: JSON.stringify(data),
       headers: {
@@ -56,10 +54,9 @@ export class ProjectService extends APIService {
   }
 
   async delete(id: string) {
-    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.PROJECT.REMOVE.replace(
-      ":id",
-      id
-    )}`;
+    const url = `${
+      API_ENDPOINTS.BASEURL
+    }${API_ENDPOINTS.ITEM_TYPE.REMOVE.replace(":id", id)}`;
     return this.asyncFetch.delete(url);
   }
 
@@ -85,9 +82,9 @@ export class ProjectService extends APIService {
     );
 
     return this.asyncFetch.post(
-      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.PROJECT.SEARCH}`,
+      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.ITEM_TYPE.SEARCH}`,
       {
-        body: JSON.stringify(body), // Convert the body to JSON
+        body: JSON.stringify(body),
         headers: {
           [APP_CONSTANTS.HEADER.KEY.CONTENT_TYPE]:
             APP_CONSTANTS.HEADER.VALUE.APPLICATION_JSON,

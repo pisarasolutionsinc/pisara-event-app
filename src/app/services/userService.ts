@@ -43,7 +43,7 @@ export class UserService extends APIService {
   }
 
   async get(userId: string) {
-    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.USER.GET_BY_ID.replace(
+    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.USER.GET.replace(
       ":id",
       userId
     )}${this.query}`;
@@ -90,7 +90,6 @@ export class UserService extends APIService {
     const response = await this.asyncFetch.get(
       `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.USER.LOGOUT}`
     );
-    localStorage.removeItem("auth");
 
     return response;
   }

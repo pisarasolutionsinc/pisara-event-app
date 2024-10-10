@@ -89,12 +89,6 @@ export const useAuth = (): {
       if (result) {
         setAuth({ isAuthenticated: false, token: null, user: null });
         setCookie("token", "");
-        saveSession("auth", {
-          isAuthenticated: false,
-          token: null,
-          user: null,
-        });
-        saveLocal("auth", { isAuthenticated: false, token: null, user: null });
 
         return result;
       }
