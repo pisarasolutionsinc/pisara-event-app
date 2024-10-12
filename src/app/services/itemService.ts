@@ -84,7 +84,7 @@ export class ItemService extends APIService {
     );
 
     return this.asyncFetch.post(
-      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.ITEM.SEARCH}`,
+      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.ITEM.SEARCH_ITEM}`,
       {
         body: JSON.stringify(body),
         headers: {

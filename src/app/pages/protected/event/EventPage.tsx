@@ -1,39 +1,41 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useProject } from "../../../hooks/useProject";
-import { Project } from "../../../models/projectModels";
+import { EventList } from "./features/EventList";
+import { HeaderEvent } from "./features/HeaderEvent";
 
 export const EventPage = () => {
-  const { projectKey } = useParams();
-  const { searchProject } = useProject();
-  const [project, setProject] = useState<Project[]>([]);
+  const { currentProject: project, loading, error } = useProject();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<string>("list");
+  // const projectStatuses = getCurrentProjectStatuses(project);
+  // console.log(projectStatuses);
 
   useEffect(() => {
-    fetchEvent();
-  }, []);
+    const tab = searchParams.get("tab");
+    setActiveTab(tab === "reports" ? "reports" : "list");
+  }, [searchParams]);
 
-  useEffect(() => {
-    document.title = project[0] && project[0]?.name ? project[0]?.name : "";
-  }, [project]);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-  const fetchEvent = async () => {
-    try {
-      const query: any = {
-        key: projectKey,
-      };
+  if (error) {
+    return <div>{error}</div>;
+  }
 
-      const result = await searchProject(
-        query,
-        ["name", "itemTypes", "board"],
-        [],
-        1,
-        0,
-        "",
-        true
-      );
-      setProject(result);
-    } catch (error) {}
-  };
-
-  return <div>EventPage {projectKey}</div>;
+  return (
+    <div>
+      <HeaderEvent activeTab={activeTab} setActiveTab={setActiveTab} />
+      {activeTab === "list" && (
+        <>
+          {project ? (
+            <EventList projectId={project._id!} projectKey={project.key!} />
+          ) : (
+            <div>Project not found</div>
+          )}
+        </>
+      )}
+    </div>
+  );
 };

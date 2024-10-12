@@ -2,13 +2,14 @@ import { RouteObject } from "react-router-dom";
 import LoginPage from "../../pages/auth/Login";
 import RegistrationPage from "../../pages/register/RegistrationPage";
 import { IDPage } from "../../pages/id/IDPage";
-import { CounterLayout } from "../../layouts/CouterLayout";
 import { ScannerLayout } from "../../layouts/ScannerLayout";
 import { CertificateLayout } from "../../layouts/CertificateLayout";
 import WelcomePage from "../../pages/welcome/Welcome";
 import { CertificatePage } from "../../pages/certificate/certificatePage";
 import WarningPage from "../pages/error/WarningPage";
 import { EventPage } from "../pages/protected/event/EventPage";
+import { CreateEventForm } from "../pages/protected/event/features/CreateEventForm";
+import { CounterLayout } from "../layouts/CouterLayout";
 const routes = {
   GUEST: [
     {
@@ -43,6 +44,10 @@ const routes = {
         {
           path: "/:projectKey/event/",
           element: <EventPage />,
+        },
+        {
+          path: "/:projectKey/event/create",
+          element: <CreateEventForm />,
         },
         {
           children: [{ path: "/event/:id", element: <ScannerLayout /> }],

@@ -68,6 +68,11 @@ export class APIService {
     return this; // Return this for chaining
   }
 
+  find(queryKey: any) {
+    this.#appendToQuery(`search=${queryKey}`);
+    return this; // Return this for chaining
+  }
+
   resetQuery() {
     this.query = ""; // Resets the query for future use
   }
