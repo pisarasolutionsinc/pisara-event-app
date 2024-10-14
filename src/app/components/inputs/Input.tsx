@@ -16,6 +16,8 @@ interface InputProps {
   maxRows?: number; // e.g., 4
   isRemovable?: boolean;
   onRemove?: () => void;
+  dateMin?: any;
+  dateMax?: any;
 }
 const Input = ({
   label,
@@ -31,6 +33,8 @@ const Input = ({
   maxHeight = "100px",
   isRemovable = false,
   onRemove,
+  dateMin,
+  dateMax,
 }: InputProps) => {
   return (
     <div className={twMerge(`relative ${containerClassName}`)}>
@@ -50,6 +54,43 @@ const Input = ({
             maxHeight: maxHeight,
           }}
         />
+      ) : type === "date" ? (
+        <>
+          {label && (
+            <div className="flex justify-between">
+              <label
+                className={twMerge(
+                  `text-gray-400 text-xs px-1`,
+                  labelClassName
+                )}
+              >
+                {label}
+              </label>
+              {isRemovable && (
+                <button
+                  onClick={onRemove}
+                  className="text-red-500 text-xs px-1 italic"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          )}
+          <input
+            type={type}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            className={twMerge(
+              `${
+                icon ? "pl-10 " : ""
+              } block w-full p-2 border border-gray-300 rounded-md`,
+              className
+            )}
+            min={dateMin}
+            max={dateMax}
+          />
+        </>
       ) : (
         <>
           {label && (

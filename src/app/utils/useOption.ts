@@ -5,6 +5,12 @@ export const isExcludedCreateItemOption = (name: string): boolean => {
     "Leaders",
     "Members",
     "Attendees",
+    "Fields",
+    "Organizer",
+    "Apps",
+    "Sponsors",
+    "Templates",
+    "Groups",
   ];
   return excludedNames.includes(name);
 };

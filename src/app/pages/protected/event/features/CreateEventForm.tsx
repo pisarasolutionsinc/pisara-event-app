@@ -9,6 +9,8 @@ import { AssigneeSelect } from "../../../../components/selects/AssigneeSelect";
 import { CustomFieldSelect } from "../../../../components/selects/CustomFieldSelect";
 import { safeMapFields } from "../../../../utils/useRender";
 import { SaveFAB } from "../../../../components/buttons/SaveFAB";
+import { useItem } from "../../../../hooks/useItem";
+import { useToast } from "../../../../../context/ToastProvider";
 
 interface FormData {
   projectId: string;
@@ -31,7 +33,8 @@ export const CreateEventForm = () => {
     getCurrentProjectCustomFields,
     getCurrentProjectStatuses,
   } = useProject();
-
+  const { createItem } = useItem();
+  const { showToast } = useToast();
   const commonFields =
     getCurrentProjectCommonFields(currentProject, {
       exclusions: [],
@@ -55,8 +58,6 @@ export const CreateEventForm = () => {
     },
     assignees: [],
   });
-
-  console.log(selectedAssignees);
 
   useEffect(() => {
     if (commonFields.length > 0 && eventFormData.projectId === "") {
@@ -82,8 +83,45 @@ export const CreateEventForm = () => {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log("Saved!", eventFormData);
+
+    // Validate eventFormData
+    const { fields, projectId } = eventFormData;
+
+    // Check if projectId is set and if there are values in common and custom fields
+    const isCommonFieldsComplete = fields.common.some((field) => {
+      const value = field.value;
+      return typeof value === "string" && value.trim() !== "";
+    });
+
+    const isCustomFieldsComplete = fields.custom.some((field) => {
+      const value = field.value;
+      return typeof value === "string" && value.trim() !== "";
+    });
+
+    if (!projectId || (!isCommonFieldsComplete && !isCustomFieldsComplete)) {
+      showToast(
+        "Please complete the form before saving.",
+        "error",
+        "bottom-10 right-10"
+      );
+      return;
+    }
+
+    try {
+      const response = await createItem(eventFormData);
+      if (response) {
+        console.log(response);
+        showToast(
+          "Event created successfully",
+          "success",
+          "bottom-10 right-10"
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleCancel = () => {
@@ -214,38 +252,73 @@ export const CreateEventForm = () => {
         <div className="col-span-6 border-r border-gray-300 px-4 py-4">
           <CustomFieldSelect
             projectCustomField={projectCustomFields}
-            handleCustomField={(value) => {
-              setSelectedCustomField(value);
-              setEventFormData((prev) => ({
-                ...prev,
-                fields: {
-                  ...prev.fields,
-                  custom: value.map((field) => ({
-                    fieldId: field._id,
-                    value: "", // Initialize with empty string
-                  })),
-                },
-              }));
+            formData={eventFormData}
+            handleCustomField={(values) => {
+              setSelectedCustomField(values);
+              setEventFormData((prev) => {
+                const existingFieldIds = new Set(
+                  prev.fields.custom?.map((field) => field.fieldId)
+                );
+
+                // If the number of new values is greater than existing fields, add new custom fields
+                if (values.length > existingFieldIds.size) {
+                  const newCustomFields = values
+                    .filter((value) => !existingFieldIds.has(value._id))
+                    .map((value) => ({
+                      fieldId: value._id,
+                      value: "",
+                    }));
+
+                  return {
+                    ...prev,
+                    fields: {
+                      ...prev.fields,
+                      custom: [...prev.fields.custom, ...newCustomFields],
+                    },
+                  };
+                }
+                // If the number of new values is less than existing fields, remove fields not in values
+                else if (values.length < existingFieldIds.size) {
+                  return {
+                    ...prev,
+                    fields: {
+                      ...prev.fields,
+                      custom: prev.fields.custom.filter((field) =>
+                        values.some((value) => value._id === field.fieldId)
+                      ),
+                    },
+                  };
+                }
+
+                return prev;
+              });
             }}
             customField={selectedCustomField}
             handleFieldChange={(fieldId, fieldValue) => {
-              setEventFormData((prev) => ({
-                ...prev,
-                fields: {
-                  ...prev.fields,
-                  custom: prev.fields.custom.map((field) =>
-                    field.fieldId === fieldId
-                      ? { ...field, value: fieldValue }
-                      : field
-                  ),
-                },
-              }));
+              setEventFormData((prev) => {
+                const updatedCustomFields = prev.fields.custom.map((field) =>
+                  field.fieldId === fieldId
+                    ? { ...field, value: fieldValue }
+                    : field
+                );
+
+                return {
+                  ...prev,
+                  fields: {
+                    ...prev.fields,
+                    custom: updatedCustomFields,
+                  },
+                };
+              });
             }}
           />
         </div>
         <div className="col-span-2 px-4 py-4">
           <div>
-            <h1>Coming Soon</h1>
+            <h1 className="text-xl font-bold text-gray-500">Event Templates</h1>
+          </div>
+          <div className="mt-4 space-y-2">
+            <p className="text-gray-400 text-xs">No templates available</p>
           </div>
         </div>
       </div>

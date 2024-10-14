@@ -1,8 +1,7 @@
 import { Outlet, useParams } from "react-router-dom";
 import { TopNavigation } from "../../components/navigation/TopNavigation";
-import { useLocalStorage } from "../utils/useLocalStorage";
 import { useAuth } from "../hooks/useAuth";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { WEBAPP } from "../config/config";
 import { useToast } from "../../context/ToastProvider";
 import { useProject } from "../hooks/useProject";
@@ -10,7 +9,6 @@ import { useProject } from "../hooks/useProject";
 export const CounterLayout = () => {
   const { Logout, getUser, auth } = useAuth();
   const { showToast } = useToast();
-  const { getLocal } = useLocalStorage();
   const { projectKey } = useParams();
   const { currentProject } = useProject();
 

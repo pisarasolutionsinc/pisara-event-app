@@ -94,7 +94,7 @@ EventCard.Title = function CardTitle({
   return (
     <h1
       className={twMerge(
-        "text-lg font-bold text-red-900 dark:text-white",
+        "text-lg font-bold text-red-900 dark:text-white text-nowrap truncate ",
         className
       )}
     >
@@ -177,8 +177,12 @@ EventCard.Date = function CardDate({
   className,
   date,
   icon,
+  label,
+  labelClassName,
 }: {
   className?: string;
+  label?: string;
+  labelClassName?: string;
   date?: string;
   icon?: ReactNode;
 }) {
@@ -190,7 +194,13 @@ EventCard.Date = function CardDate({
         className
       )}
     >
-      {icon} {date || card?.time || "No date provided"}
+      {icon}
+      <span
+        className={twMerge("text-gray-500 dark:text-gray-400", labelClassName)}
+      >
+        {label}
+      </span>{" "}
+      {date || card?.time || "No date provided"}
     </p>
   );
 };

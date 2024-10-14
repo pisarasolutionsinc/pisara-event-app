@@ -10,6 +10,8 @@ import WarningPage from "../pages/error/WarningPage";
 import { EventPage } from "../pages/protected/event/EventPage";
 import { CreateEventForm } from "../pages/protected/event/features/CreateEventForm";
 import { CounterLayout } from "../layouts/CouterLayout";
+import { AttendancePage } from "../pages/protected/attendance/AttendancePage";
+import { AttendanceLayout } from "../layouts/AttendanceLayout";
 const routes = {
   GUEST: [
     {
@@ -45,6 +47,7 @@ const routes = {
           path: "/:projectKey/event/",
           element: <EventPage />,
         },
+
         {
           path: "/:projectKey/event/create",
           element: <CreateEventForm />,
@@ -52,10 +55,18 @@ const routes = {
         {
           children: [{ path: "/event/:id", element: <ScannerLayout /> }],
         },
-
         {
           path: "*",
           element: <EventPage />,
+        },
+      ],
+    },
+    {
+      element: <AttendanceLayout />,
+      children: [
+        {
+          path: "/:projectKey/event/:itemId",
+          element: <AttendancePage />,
         },
       ],
     },

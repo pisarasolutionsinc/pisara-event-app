@@ -4,6 +4,7 @@ import { PiPlus } from "react-icons/pi";
 import { twMerge } from "tailwind-merge";
 import { isExcludedCreateItemOption } from "../../utils/useOption";
 import { useToast } from "../../../context/ToastProvider";
+import { BiCheck } from "react-icons/bi";
 
 interface Option {
   _id: string;
@@ -90,11 +91,13 @@ const CustomSelect = ({
                   key={option._id}
                   onClick={() => handleSelect(option)}
                   className={twMerge(
-                    "p-2 cursor-pointer hover:bg-gray-100",
-                    isSelected(option) ? "bg-blue-100" : ""
+                    "p-2 cursor-pointer flex items-center justify-between gap-2",
+                    isSelected(option)
+                      ? "bg-green-100 hover:bg-green-200 text-green-700"
+                      : "hover:bg-gray-100"
                   )}
                 >
-                  {option.name}
+                  {option.name} {isSelected(option) && <BiCheck />}
                 </li>
               ) : null}
             </>

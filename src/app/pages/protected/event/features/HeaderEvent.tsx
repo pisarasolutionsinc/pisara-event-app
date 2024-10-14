@@ -19,7 +19,6 @@ export const HeaderEvent = ({ activeTab, setActiveTab }: TabProps) => {
       onClick: () => {
         const searchParams = new URLSearchParams();
         searchParams.set("tab", "list");
-
         setActiveTab("list");
       },
     },

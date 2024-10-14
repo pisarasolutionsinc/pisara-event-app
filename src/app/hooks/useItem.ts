@@ -1,6 +1,8 @@
+import { useParams } from "react-router-dom";
 import { ItemService } from "../services/itemService";
 
 export const useItem = () => {
+  const { itemId } = useParams();
   const itemService = new ItemService();
 
   const getItem = async (id: string) => {
@@ -56,6 +58,7 @@ export const useItem = () => {
   };
 
   return {
+    itemId,
     getItem,
     getItems,
     searchItem,
