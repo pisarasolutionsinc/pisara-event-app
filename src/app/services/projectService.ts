@@ -63,10 +63,36 @@ export class ProjectService extends APIService {
     return this.asyncFetch.delete(url);
   }
 
-  async search(query: string) {
+  async search(
+    query: any = {},
+    select: string[] = [],
+    populate: string[] = [],
+    limit: number = 10,
+    page: number = 1,
+    sort: string = "-createdAt",
+    lean: boolean = false
+  ) {
     this.resetQuery();
-    return this.asyncFetch.get(
-      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.PROJECT.SEARCH}${this.query}&search=${query}`
+
+    const body = this.buildSearchBody(
+      query,
+      populate,
+      sort,
+      page,
+      select,
+      limit,
+      lean
+    );
+
+    return this.asyncFetch.post(
+      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.PROJECT.SEARCH}`,
+      {
+        body: JSON.stringify(body), // Convert the body to JSON
+        headers: {
+          [APP_CONSTANTS.HEADER.KEY.CONTENT_TYPE]:
+            APP_CONSTANTS.HEADER.VALUE.APPLICATION_JSON,
+        },
+      }
     );
   }
 }

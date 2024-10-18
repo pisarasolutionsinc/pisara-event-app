@@ -5,12 +5,33 @@ export class APIService {
     this.query = "";
   }
 
+  // Private method to append to query
   #appendToQuery(query: string) {
     if (this.query === "") {
       this.query = `?${query}`;
     } else {
       this.query += `&${query}`;
     }
+  }
+
+  buildSearchBody(
+    queryKey: any,
+    populateArray: string[],
+    sort: string,
+    skip: number,
+    select: string[],
+    limit: number,
+    lean: boolean
+  ) {
+    return {
+      query: queryKey,
+      populateArray: populateArray,
+      sort: sort,
+      skip: skip,
+      select: select.join(" "),
+      limit: limit,
+      lean: lean,
+    };
   }
 
   select(selectArray: string[]) {
@@ -44,6 +65,11 @@ export class APIService {
 
   page(page: number) {
     this.#appendToQuery(`page=${page}`);
+    return this; // Return this for chaining
+  }
+
+  find(queryKey: any) {
+    this.#appendToQuery(`search=${queryKey}`);
     return this; // Return this for chaining
   }
 

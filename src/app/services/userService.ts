@@ -43,7 +43,7 @@ export class UserService extends APIService {
   }
 
   async get(userId: string) {
-    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.USER.GET_BY_ID.replace(
+    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.USER.GET.replace(
       ":id",
       userId
     )}${this.query}`;
@@ -80,6 +80,17 @@ export class UserService extends APIService {
     return this.asyncFetch.delete(url);
   }
 
+  async search(query: string) {
+    const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.USER.SEARCH}${this.query}?search=${query}`;
+    this.resetQuery();
+    return this.asyncFetch.get(url, {
+      headers: {
+        [APP_CONSTANTS.HEADER.KEY.CONTENT_TYPE]:
+          APP_CONSTANTS.HEADER.VALUE.APPLICATION_JSON,
+      },
+    });
+  }
+
   async current() {
     return this.asyncFetch.get(
       `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.USER.CHECKLOGIN}`
@@ -90,15 +101,7 @@ export class UserService extends APIService {
     const response = await this.asyncFetch.get(
       `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.USER.LOGOUT}`
     );
-    localStorage.removeItem("auth");
 
     return response;
-  }
-
-  async search(query: string) {
-    this.resetQuery();
-    return this.asyncFetch.get(
-      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.USER.SEARCH}${this.query}&search=${query}`
-    );
   }
 }

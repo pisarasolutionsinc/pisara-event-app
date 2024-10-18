@@ -7,12 +7,10 @@ import {
 } from "../config/common";
 
 import { Address, Name } from "./collectionModel";
-import { Precinct } from "./precinctModel";
 
 export interface Person {
   _id?: string;
   customId: string;
-  precinct?: Precinct;
   organization?: string;
   occupation?: string;
   photo?: string;

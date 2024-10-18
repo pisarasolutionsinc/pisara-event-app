@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { useCookie } from "../utils/useCookie";
-import { useSessionStorage } from "../utils/useSessionStorage";
-import { useLocalStorage } from "../utils/useLocalStorage";
 import { UserService } from "../services/userService";
+import { useLocalStorage } from "../utils/useLocalStorage";
 
 interface Auth {
-  isAuthenticated: boolean;
+  isAuthenticated?: boolean;
   token: string | null;
   user: any;
 }
@@ -15,36 +14,34 @@ export const useAuth = (): {
   Login: (email: string, password: string) => Promise<Auth | undefined>;
   getUser: (id: string) => Promise<any | null>;
   Logout: () => Promise<any | null>;
+  findUser: (searchKey: string) => Promise<any | null>;
+  getCurrentUser: () => Promise<any | null>;
+  isAuthenticated: boolean;
 } => {
-  const { setCookie, getCookie } = useCookie();
-  const { saveSession, getSession } = useSessionStorage();
-  const { saveLocal } = useLocalStorage();
+  const { setCookie } = useCookie();
+  const { removeLocal } = useLocalStorage();
   const userService = new UserService();
-
   const [auth, setAuth] = useState<Auth>({
     isAuthenticated: false,
     token: null,
     user: null,
   });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
-    const storedToken = getCookie("token");
-    const session = getSession("auth");
-
-    if (session && session.token) {
-      setAuth({
-        isAuthenticated: true,
-        token: session.token,
-        user: session.user,
-      });
-    } else if (storedToken) {
-      setAuth((prevAuth) => ({
-        ...prevAuth,
-        token: storedToken,
-        isAuthenticated: true,
-      }));
-    }
+    isCurrentUser();
   }, []);
+
+  const isCurrentUser = async () => {
+    try {
+      const result = await getCurrentUser();
+      setIsAuthenticated(result ? true : false);
+      setAuth(result);
+    } catch (error) {
+      setIsAuthenticated(false);
+      setAuth({ isAuthenticated: false, token: null, user: null });
+    }
+  };
 
   const Login = async (
     email: string,
@@ -54,8 +51,6 @@ export const useAuth = (): {
       const credentials = { email, password };
       const result: any = await userService.login(credentials);
 
-      console.log("Login result:", result);
-
       if (result && result.token && result.user) {
         const newAuth: Auth = {
           isAuthenticated: true,
@@ -64,14 +59,11 @@ export const useAuth = (): {
         };
         setAuth(newAuth);
         setCookie("token", result.token);
-        saveSession("auth", newAuth);
-        saveLocal("auth", newAuth);
 
         return newAuth;
       } else {
         console.error("Invalid credentials");
         setAuth({ isAuthenticated: false, token: null, user: null });
-        setCookie("token", "");
         return undefined;
       }
     } catch (error) {
@@ -89,17 +81,22 @@ export const useAuth = (): {
       if (result) {
         setAuth({ isAuthenticated: false, token: null, user: null });
         setCookie("token", "");
-        saveSession("auth", {
-          isAuthenticated: false,
-          token: null,
-          user: null,
-        });
-        saveLocal("auth", { isAuthenticated: false, token: null, user: null });
-
+        removeLocal("auth");
+        isCurrentUser();
         return result;
       }
     } catch (error) {
       console.error("Logout failed:", error);
+      return null;
+    }
+  };
+
+  const getCurrentUser = async () => {
+    try {
+      const result = await userService.current();
+      return result;
+    } catch (error) {
+      console.error("Get current user failed:", error);
       return null;
     }
   };
@@ -116,10 +113,23 @@ export const useAuth = (): {
     }
   };
 
+  const findUser = async (searchKey: any) => {
+    try {
+      const result = await userService.search(searchKey);
+      return result;
+    } catch (error) {
+      console.error("Find user failed:", error);
+      return null;
+    }
+  };
+
   return {
     auth,
     Login,
     getUser,
     Logout,
+    findUser,
+    getCurrentUser,
+    isAuthenticated,
   };
 };

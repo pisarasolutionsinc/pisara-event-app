@@ -1,15 +1,12 @@
-import { AttendanceStatus } from "./../config/common";
-
 export interface Attendance {
   _id?: string;
-  voter: string;
-  event: string;
+  person: string;
   date: string;
   timeIn?: string | null;
   timeOut?: string | null;
   scannedBy: string;
-  uploadBy?: "manual" | "camera" | "file" | "device";
-  status: AttendanceStatus; // present , completed , absent
+  uploadBy?: "manual" | "camera" | "file" | "device" | "rfid";
+  status: string[];
   duration: string;
   expenses: number;
 }

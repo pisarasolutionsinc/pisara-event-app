@@ -3,8 +3,8 @@ import { FaCreditCard, FaFileAlt } from "react-icons/fa";
 import { FaCheck, FaEye } from "react-icons/fa6";
 
 export const WEBAPP = {
-  NAME: "PISARA Event Management App",
-  LOGO: "",
+  NAME: "PISARA | Event",
+  LOGO: "/pisara-logo.png",
   DESCRIPTION:
     "Our Event Management System is designed to simplify the organization, tracking, and management of events, providing both organizers and attendees with a seamless and efficient experience.",
   ABOUT:
@@ -13,6 +13,22 @@ export const WEBAPP = {
   CONTACT_NUMBER: "+639123456789",
   EMAIL: "pisara.solutions.inc@gmail.com",
 };
+
+export const CLOUDINARY = {
+  CLOUD_NAME: "pisara-dev",
+  UPLOAD_PRESET_UNASIGNED: "pisara-dev",
+  DEFAULT_FOLDER: "pisara-app/",
+  API_KEY: "166187199846281",
+  API_SECRET: "RMUJDULoCJ31xmIxvB5POe5641M",
+  IMAGE_UPLOAD_ENDPOINT:
+    "https://api.cloudinary.com/v1_1/pisara-dev/image/upload",
+  IMAGE_DESTROY_ENDPOINT:
+    "https://api.cloudinary.com/v1_1/pisara-dev/image/destroy",
+};
+
+// export const API_BASE_URL =
+//   process.env.API_BASE_URL || "https://pisara-service-dev-e9953c1dd9d9.herokuapp.com/api";
+export const API_BASE_URL = "http://localhost:5000/api";
 
 export const APP_CONSTANTS = {
   TITLES: {
@@ -463,19 +479,3 @@ export const FAQ_CONTENT = [
     ],
   },
 ];
-
-export const CLOUDINARY = {
-  CLOUD_NAME: "pisara-dev",
-  UPLOAD_PRESET_UNASIGNED: "pisara-dev",
-  DEFAULT_FOLDER: "pisara-app/",
-  API_KEY: "166187199846281",
-  API_SECRET: "RMUJDULoCJ31xmIxvB5POe5641M",
-  IMAGE_UPLOAD_ENDPOINT:
-    "https://api.cloudinary.com/v1_1/pisara-dev/image/upload",
-  IMAGE_DESTROY_ENDPOINT:
-    "https://api.cloudinary.com/v1_1/pisara-dev/image/destroy",
-};
-
-// export const API_BASE_URL =
-//   process.env.API_BASE_URL || "https://pisara-service-dev-e9953c1dd9d9.herokuapp.com/api";
-export const API_BASE_URL = "http://localhost:5000/api";

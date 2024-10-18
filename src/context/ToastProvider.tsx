@@ -11,7 +11,7 @@ interface ToastContextType {
   showToast: (
     message: string,
     type: "success" | "error" | "info",
-    positionClasses: string
+    positionClasses?: string
   ) => void;
 }
 
@@ -43,38 +43,40 @@ const ToastProvider = ({ children }: ToastProviderProp) => {
     (
       message: string,
       type: "success" | "error" | "info",
-      positionClasses: string
+      positionClasses = ""
     ) => {
       const id = Date.now() + Math.random(); // Ensure unique id
       setToasts((prevToasts) => [
         ...prevToasts,
         { id, message, type, positionClasses },
       ]);
+      // Automatically remove the toast after 3 seconds
       setTimeout(() => {
-        setToasts((prevToasts) =>
-          prevToasts.filter((toast) => toast.id !== id)
-        );
+        handleClose(id);
       }, 3000);
     },
     []
   );
 
-  // Ensure that removing toast happens outside the rendering phase
   const handleClose = useCallback((id: number) => {
-    setToasts((prevToasts) => prevToasts.filter((t) => t.id !== id));
+    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
   }, []);
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
+      {/* Container for toasts */}
       <div className="fixed bottom-4 right-4 space-y-2 z-50">
-        {toasts.map((toast) => (
+        {toasts.map((toast, index) => (
           <Toast
             key={toast.id}
             message={toast.message}
             type={toast.type}
             onClose={() => handleClose(toast.id)}
-            positionClasses={toast.positionClasses}
+            positionClasses={toast.positionClasses} // Custom position classes for each toast
+            style={{
+              marginBottom: `${Math.min((index === 3 ? 3 : index) * 8, 24)}px`,
+            }} // Cap margin at 24px
           />
         ))}
       </div>
