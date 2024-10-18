@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useItem } from "../../../../hooks/useItem";
 import { EventCard } from "../../../../components/cards/EventCards";
 import { BsCalendarEvent } from "react-icons/bs";
@@ -12,34 +12,17 @@ type EventListProps = {
 };
 
 export const EventList = ({ projectId, projectKey }: EventListProps) => {
-  const { searchItem } = useItem();
-  const [items, setItems] = useState<any[]>([]);
+  const { items, fetchItem } = useItem();
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchItem();
+    const query = {
+      projectId: projectId,
+    };
+
+    fetchItem(query);
   }, [projectId]);
-
-  const fetchItem = async () => {
-    try {
-      const query = {
-        projectId: projectId,
-      };
-
-      const result = await searchItem(
-        query,
-        ["number", "fields", "board"],
-        ["fields.common.fieldId", "fields.custom.fieldId", "attachments"],
-        10,
-        0,
-        "",
-        true
-      );
-      setItems(result);
-    } catch (error) {
-      console.error("Error fetching items:", error);
-    }
-  };
 
   const fieldNamesToSearch = ["Start Datetime", "End Datetime"];
   const findFieldByNames = (fields: any[], fieldNames: string[]) => {

@@ -12,6 +12,9 @@ import { CreateEventForm } from "../pages/protected/event/features/CreateEventFo
 import { CounterLayout } from "../layouts/CouterLayout";
 import { AttendancePage } from "../pages/protected/attendance/AttendancePage";
 import { AttendanceLayout } from "../layouts/AttendanceLayout";
+import { HomePage } from "../pages/protected/home/HomePage";
+import { PersonPage } from "../pages/protected/person/PersonPage";
+import { AttendanceImport } from "../pages/protected/attendance/features/AttendanceImport";
 const routes = {
   GUEST: [
     {
@@ -44,6 +47,10 @@ const routes = {
       element: <CounterLayout />,
       children: [
         {
+          path: "/apps/event/",
+          element: <HomePage />,
+        },
+        {
           path: "/:projectKey/event/",
           element: <EventPage />,
         },
@@ -67,6 +74,14 @@ const routes = {
         {
           path: "/:projectKey/event/:itemId",
           element: <AttendancePage />,
+        },
+        {
+          path: "/:projectKey/event/:itemId/import",
+          element: <AttendanceImport />,
+        },
+        {
+          path: "/:projectKey/event/:itemId/person",
+          element: <PersonPage />,
         },
       ],
     },

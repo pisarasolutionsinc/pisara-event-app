@@ -6,3 +6,10 @@ export const EVENT_TEMPLATE = [
     date: "2022-01-01",
   },
 ];
+
+export const FIELD_TEMPLATE = {
+  ATTENDEES: [],
+  ATTENDANCE: [],
+  GROUP: [],
+  EXPESES: [],
+};

@@ -34,7 +34,15 @@ export const CounterLayout = () => {
       <div className="flex flex-col min-h-screen flex-1">
         <div>
           <TopNavigation>
-            <TopNavigation.Item href={`${projectKey}/event`}>
+            <TopNavigation.Item
+              href={`${
+                location.pathname === `/${projectKey}/event`
+                  ? "/apps/event"
+                  : location.pathname === `/${projectKey}/event/create`
+                  ? `/${projectKey}/event`
+                  : "/apps/event"
+              }`}
+            >
               <div className="flex justify-between items-center w-full">
                 <div className="flex items-center gap-2">
                   <img
@@ -42,7 +50,9 @@ export const CounterLayout = () => {
                     className="h-10"
                   />
                   <span className="text-xl font-bold text-gray-600">
-                    {currentProject?.name}
+                    {location.pathname === `/apps/event`
+                      ? "Your Event Apps"
+                      : currentProject?.name}
                   </span>
                 </div>
               </div>

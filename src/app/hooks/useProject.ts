@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Project } from "../models/projectModels";
 import { ProjectService } from "../services/projectService";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useLocalStorage } from "../utils/useLocalStorage";
 import { WEBAPP } from "../config/config";
+import { useAuth } from "./useAuth";
 
 interface Status {
   _id: string;
@@ -24,42 +25,33 @@ type GetCurrentProjectFieldsParams = {
 export const useProject = () => {
   const { projectKey } = useParams();
   const projectService = new ProjectService();
+  const { auth } = useAuth();
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [projects, setProjects] = useState<Project[] | []>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { saveLocal } = useLocalStorage();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (projectKey === "undefined") {
+      navigate("/apps/event");
+    }
+  }, [projectKey, navigate]);
 
   //SUB FUNCTIONS
 
   useEffect(() => {
-    const fetchEvent = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const query = {
-          key: projectKey,
-        };
-
-        const result = await searchProject(
-          query,
-          ["name", "itemTypes", "board", "key"],
-          ["itemTypes.fields", "itemTypes.type", "itemTypes.workflow"],
-          1,
-          0,
-          "",
-          true
-        );
-        setCurrentProject(result[0]);
-      } catch (error) {
-        console.error("Failed to fetch event:", error);
-        setError("Failed to load project data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (projectKey) {
+    if (
+      projectKey !== "undefined" &&
+      (location.pathname === `/${projectKey}/event` ||
+        location.pathname === `/${projectKey}/event/create`)
+    ) {
       fetchEvent();
+    }
+
+    if (location.pathname === "/apps/event") {
+      fetchProjects();
     }
   }, [projectKey]);
 
@@ -71,8 +63,71 @@ export const useProject = () => {
     }
   }, [currentProject, saveLocal]);
 
+  const fetchEvent = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const query = {
+        key: projectKey,
+      };
+
+      const result = await searchProject(
+        query,
+        ["name", "itemTypes", "board", "key"],
+        ["itemTypes.fields", "itemTypes.type", "itemTypes.workflow"],
+        1,
+        0,
+        "",
+        true
+      );
+      setCurrentProject(result[0]);
+    } catch (error) {
+      console.error("Failed to fetch event:", error);
+      setError("Failed to load project data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const query = {
+        owner: auth?.user?.id,
+        // "itemTypes.type.name": "Project",
+      };
+      const result = await searchProject(
+        query,
+        ["name", "itemTypes", "board", "key", "owner"],
+        ["itemTypes.fields", "itemTypes.type", "itemTypes.workflow"],
+        10,
+        0,
+        "",
+        true
+      );
+      setProjects(result);
+    } catch (error) {
+      console.error("Failed to fetch event:", error);
+      setError("Failed to load project data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   function ucFirst(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  function getProjectsByItemTypeName(
+    projects: any[],
+    itemTypeName: string
+  ): any[] {
+    return projects.filter((project) =>
+      project.itemTypes.some(
+        (itemType: any) => itemType.type.name === itemTypeName
+      )
+    );
   }
 
   function getCurrentProjectStatuses(currentProject: Project | null):
@@ -224,11 +279,13 @@ export const useProject = () => {
     //SUB
     projectKey,
     currentProject,
+    projects,
     loading,
     error,
     getCurrentProjectStatuses,
     getCurrentProjectFields,
     getCurrentProjectCommonFields,
     getCurrentProjectCustomFields,
+    getProjectsByItemTypeName,
   };
 };

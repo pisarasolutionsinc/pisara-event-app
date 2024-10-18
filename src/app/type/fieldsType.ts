@@ -1,4 +1,10 @@
 export interface FieldsType {
   name: string;
-  type: string;
+  type:
+    | "singletext"
+    | "multitext"
+    | "singleselect"
+    | "multiselect"
+    | "date"
+    | "number";
 }

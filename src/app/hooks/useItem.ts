@@ -1,9 +1,28 @@
 import { useParams } from "react-router-dom";
 import { ItemService } from "../services/itemService";
+import { useState } from "react";
 
 export const useItem = () => {
   const { itemId } = useParams();
   const itemService = new ItemService();
+  const [items, setItems] = useState<any[]>([]);
+
+  const fetchItem = async (query: any = {}) => {
+    try {
+      const result = await searchItem(
+        query,
+        ["number", "fields", "board"],
+        ["fields.common.fieldId", "fields.custom.fieldId"],
+        10,
+        0,
+        "",
+        true
+      );
+      setItems(result);
+    } catch (error) {
+      console.error("Error fetching items:", error);
+    }
+  };
 
   const getItem = async (id: string) => {
     try {
@@ -26,6 +45,15 @@ export const useItem = () => {
   const createItem = async (data: any) => {
     try {
       const Item = await itemService.create(data);
+      return Item;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const updateItem = async (id: string, data: any) => {
+    try {
+      const Item = await itemService.update(id, data);
       return Item;
     } catch (error) {
       console.log(error);
@@ -63,5 +91,9 @@ export const useItem = () => {
     getItems,
     searchItem,
     createItem,
+    updateItem,
+    //other
+    items,
+    fetchItem,
   };
 };

@@ -2,8 +2,8 @@ import React from "react";
 import { twMerge } from "tailwind-merge";
 
 interface SearchInputProps {
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
   containerClassName?: string; // Renamed for clarity
   className?: string; // This will be for the input

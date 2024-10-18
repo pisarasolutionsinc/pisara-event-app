@@ -6,7 +6,7 @@ import { useProject } from "../../../../hooks/useProject";
 import { WEBAPP } from "../../../../config/config";
 import { FaRegPlayCircle, FaRegStopCircle } from "react-icons/fa";
 import { IoIosQrScanner } from "react-icons/io";
-import { IoPersonCircleOutline } from "react-icons/io5";
+import { IoAnalytics } from "react-icons/io5";
 import { RiGroup2Line } from "react-icons/ri";
 import { Tab } from "../../../../components/buttons/Tab";
 
@@ -44,13 +44,13 @@ export const AttendanceHeader = () => {
 
   const AttendanceTab = [
     {
-      name: "Persons",
-      tabValue: "attendees",
-      icon: <IoPersonCircleOutline size={20} />,
+      name: "Reports",
+      tabValue: "reports",
+      icon: <IoAnalytics size={20} />,
       onClick: () => {
         const searchParams = new URLSearchParams();
-        searchParams.set("tab", "attendees");
-        setActiveTab("attendees");
+        searchParams.set("tab", "reports");
+        setActiveTab("reports");
       },
     },
     {

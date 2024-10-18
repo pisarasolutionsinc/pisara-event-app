@@ -79,6 +79,14 @@ export const CreateEventForm = () => {
             fieldId: field._id,
             value: "",
           })),
+        // custom: projectCustomFields
+        // .filter((field: any) =>
+        //   ["Title", "Description", "Status", "Assignees"].includes(field.name)
+        // )
+        // .map((field: any) => ({
+        //   fieldId: field._id,
+        //   value: "",
+        // })),
       },
     }));
   };
