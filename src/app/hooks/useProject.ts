@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useLocalStorage } from "../utils/useLocalStorage";
 import { WEBAPP } from "../config/config";
 import { useAuth } from "./useAuth";
+import { isPathName } from "../utils/usePath";
 
 interface Status {
   _id: string;
@@ -42,13 +43,9 @@ export const useProject = () => {
   //SUB FUNCTIONS
 
   useEffect(() => {
-    if (
-      projectKey !== "undefined" &&
-      (location.pathname === `/${projectKey}/event` ||
-        location.pathname === `/${projectKey}/event/create`)
-    ) {
-      fetchEvent();
-    }
+    isPathName([`/${projectKey}/event`, `/${projectKey}/event/create`], () => {
+      searchCurrentProject();
+    });
 
     if (location.pathname === "/apps/event") {
       fetchProjects();
@@ -63,7 +60,7 @@ export const useProject = () => {
     }
   }, [currentProject, saveLocal]);
 
-  const fetchEvent = async () => {
+  const searchCurrentProject = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -71,15 +68,14 @@ export const useProject = () => {
         key: projectKey,
       };
 
-      const result = await searchProject(
-        query,
-        ["name", "itemTypes", "board", "key"],
-        ["itemTypes.fields", "itemTypes.type", "itemTypes.workflow"],
-        1,
-        0,
-        "",
-        true
-      );
+      const params = {
+        query: query,
+        select: ["name", "itemTypes", "board", "key"],
+        populate: ["itemTypes.fields", "itemTypes.type", "itemTypes.workflow"],
+        lean: true,
+      };
+
+      const result = await searchProjects(params);
       setCurrentProject(result[0]);
     } catch (error) {
       console.error("Failed to fetch event:", error);
@@ -97,15 +93,15 @@ export const useProject = () => {
         owner: auth?.user?.id,
         // "itemTypes.type.name": "Project",
       };
-      const result = await searchProject(
-        query,
-        ["name", "itemTypes", "board", "key", "owner"],
-        ["itemTypes.fields", "itemTypes.type", "itemTypes.workflow"],
-        10,
-        0,
-        "",
-        true
-      );
+
+      const params = {
+        query: query,
+        select: ["name", "itemTypes", "board", "key"],
+        populate: ["itemTypes.fields", "itemTypes.type", "itemTypes.workflow"],
+        lean: true,
+      };
+
+      const result = await searchProjects(params);
       setProjects(result);
     } catch (error) {
       console.error("Failed to fetch event:", error);
@@ -246,25 +242,9 @@ export const useProject = () => {
     }
   };
 
-  const searchProject = async (
-    query: any = {},
-    select: string[] = [],
-    populate: string[] = [],
-    limit: number = 10,
-    page: number = 1,
-    sort: string = "-createdAt",
-    lean: boolean = false
-  ) => {
+  const searchProjects = async (params: any) => {
     try {
-      const projects = await projectService.search(
-        query,
-        select,
-        populate,
-        limit,
-        page,
-        sort,
-        lean
-      );
+      const projects = await projectService.search(params);
       return projects;
     } catch (error) {
       console.log(error);
@@ -275,7 +255,7 @@ export const useProject = () => {
     //MAIN
     getProject,
     getProjects,
-    searchProject,
+    searchProjects,
     //SUB
     projectKey,
     currentProject,

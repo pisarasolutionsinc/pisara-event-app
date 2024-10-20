@@ -68,6 +68,11 @@ export class APIService {
     return this; // Return this for chaining
   }
 
+  lean(lean: boolean) {
+    this.#appendToQuery(`lean=${lean}`);
+    return this; // Return this for chaining
+  }
+
   find(queryKey: any) {
     this.#appendToQuery(`search=${queryKey}`);
     return this; // Return this for chaining

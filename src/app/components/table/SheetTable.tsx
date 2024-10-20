@@ -5,38 +5,25 @@ import { GiJigsawBox } from "react-icons/gi";
 import { Field } from "../../models/fieldModels";
 import { ATTENDACE_FIELD } from "../../config/fieldConfig";
 import StatusDropdown from "../selects/StatusDropdown";
-
-type Header = {
-  id: number;
-  name: string;
-  type: any;
-  fieldType: string;
-  option?: StatusOption[];
-};
-
-type RowData = {
-  [key: string]: any | any[];
-};
-
-type SheetTableProps = {
-  headers: Header[] | [];
-  initialRows?: RowData[];
-};
-
-type StatusOption = {
-  value: string;
-  label: string;
-  color: string;
-};
+import {
+  Header,
+  RowData,
+  SheetTableProps,
+  StatusOption,
+} from "../../models/tableModel";
 
 export const SheetTable = ({
-  headers: initialHeaders,
+  headers: initialHeaders = [],
   initialRows = [],
+  onSave,
 }: SheetTableProps) => {
   const [headers, setHeaders] = useState<Header[]>(initialHeaders);
   const [rows, setRows] = useState<RowData[]>(initialRows);
   const [showAddColumnModal, setShowAddColumnModal] = useState(false);
   const [selectedField, setSelectedField] = useState<Field | null>(null);
+
+  console.log("Headers:", headers);
+  console.log("Rows:", rows);
 
   const [draggedColumnIndex, setDraggedColumnIndex] = useState<number | null>(
     null
@@ -131,8 +118,7 @@ export const SheetTable = ({
   };
 
   const handleSave = () => {
-    console.log("Rows:", rows);
-    console.log("Headers:", headers);
+    onSave && onSave(headers, rows);
   };
 
   return (

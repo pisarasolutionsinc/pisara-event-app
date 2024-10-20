@@ -2,6 +2,7 @@ import { APIService } from "./APIService";
 import { useAsyncFetch } from "../utils/useFetch";
 import { API_ENDPOINTS } from "../config/endpointConfig";
 import { APP_CONSTANTS } from "../config/config";
+import { Item as Model } from "../models/itemModels";
 
 export class ItemService extends APIService {
   private asyncFetch;
@@ -11,7 +12,7 @@ export class ItemService extends APIService {
     this.asyncFetch = useAsyncFetch();
   }
 
-  async create(data: any) {
+  async create(data: Model) {
     return this.asyncFetch.post(
       `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.ITEM.CREATE}`,
       {
@@ -29,6 +30,8 @@ export class ItemService extends APIService {
       ":id",
       id
     )}${this.query}`;
+
+    console.log(url);
     this.resetQuery();
     return this.asyncFetch.get(url);
   }
@@ -40,10 +43,24 @@ export class ItemService extends APIService {
     );
   }
 
-  async update(id: string, data: any) {
+  async getAllByProject(
+    projectId: string,
+    page: number = 1,
+    limit: number = 10
+  ) {
+    this.resetQuery();
+    return this.asyncFetch.get(
+      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.ITEM.GET_BY_PROJECT_ID.replace(
+        ":projectId",
+        projectId
+      )}${this.query}&page=${page}&limit=${limit}`
+    );
+  }
+
+  async update(data: Model) {
     const url = `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.ITEM.UPDATE.replace(
-      ":id",
-      id
+      "/:id",
+      ""
     )}`;
     return this.asyncFetch.put(url, {
       body: JSON.stringify(data),
@@ -62,29 +79,21 @@ export class ItemService extends APIService {
     return this.asyncFetch.delete(url);
   }
 
-  async search(
-    query: any = {},
-    select: string[] = [],
-    populate: string[] = [],
-    limit: number = 10,
-    page: number = 1,
-    sort: string = "-createdAt",
-    lean: boolean = false
-  ) {
+  async search(params: any) {
     this.resetQuery();
 
     const body = this.buildSearchBody(
-      query,
-      populate,
-      sort,
-      page,
-      select,
-      limit,
-      lean
+      params.query as any,
+      params.populate as string[],
+      params.sort as string,
+      params.page as number,
+      params.select as string[],
+      params.limit as number,
+      params.lean as boolean
     );
 
     return this.asyncFetch.post(
-      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.ITEM.SEARCH_ITEM}`,
+      `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.ITEM.SEARCH}`,
       {
         body: JSON.stringify(body),
         headers: {
