@@ -47,9 +47,9 @@ export const useProject = () => {
       searchCurrentProject();
     });
 
-    if (location.pathname === "/apps/event") {
+    isPathName([`/apps/event`, `/`, `*`], () => {
       fetchProjects();
-    }
+    });
   }, [projectKey]);
 
   useEffect(() => {

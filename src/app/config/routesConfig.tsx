@@ -1,9 +1,9 @@
 import { RouteObject } from "react-router-dom";
 
-import WarningPage from "../pages/error/WarningPage";
+// import WarningPage from "../pages/error/WarningPage";
 import { EventPage } from "../pages/protected/event/EventPage";
 import { CreateEventForm } from "../pages/protected/event/features/CreateEventForm";
-import { CounterLayout } from "../layouts/CouterLayout";
+import { CounterLayout } from "../layouts/CounterLayout";
 import { AttendancePage } from "../pages/protected/attendance/AttendancePage";
 import { AttendanceLayout } from "../layouts/AttendanceLayout";
 import { HomePage } from "../pages/protected/home/HomePage";
@@ -14,7 +14,7 @@ const routes = {
   GUEST: [
     {
       path: "*",
-      element: <WarningPage />,
+      element: <LoginPage />,
     },
     {
       path: "/:projectKey/event/",
@@ -30,6 +30,10 @@ const routes = {
       element: <CounterLayout />,
       children: [
         {
+          path: "/",
+          element: <HomePage />,
+        },
+        {
           path: "/apps/event/",
           element: <HomePage />,
         },
@@ -44,7 +48,7 @@ const routes = {
         },
         {
           path: "*",
-          element: <EventPage />,
+          element: <HomePage />,
         },
       ],
     },
