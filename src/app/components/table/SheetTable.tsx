@@ -1,29 +1,31 @@
 import React, { useState } from "react";
-import { PiPlusCircle } from "react-icons/pi";
+import { PiPlusCircleFill } from "react-icons/pi";
 import { AiOutlineDelete } from "react-icons/ai"; // Import delete icon
 import { GiJigsawBox } from "react-icons/gi";
 import { Field } from "../../models/fieldModels";
 import { ATTENDACE_FIELD } from "../../config/fieldConfig";
 import StatusDropdown from "../selects/StatusDropdown";
-import {
-  Header,
-  RowData,
-  SheetTableProps,
-  StatusOption,
-} from "../../models/tableModel";
+import { Header, RowData, StatusOption } from "../../models/tableModel";
+import { formatDateToMMMDDYYYY, formatTimeToAMPM } from "../../utils/useDate";
+
+export type SheetTableProps = {
+  headers: Header[] | [];
+  initialRows?: RowData[];
+  onSave?: (headers: Header[], rows: RowData[]) => void;
+  setEditMode?: (isEditMode: boolean) => void;
+  isEditMode?: boolean;
+};
 
 export const SheetTable = ({
   headers: initialHeaders = [],
   initialRows = [],
   onSave,
+  isEditMode = false,
 }: SheetTableProps) => {
   const [headers, setHeaders] = useState<Header[]>(initialHeaders);
   const [rows, setRows] = useState<RowData[]>(initialRows);
   const [showAddColumnModal, setShowAddColumnModal] = useState(false);
   const [selectedField, setSelectedField] = useState<Field | null>(null);
-
-  console.log("Headers:", headers);
-  console.log("Rows:", rows);
 
   const [draggedColumnIndex, setDraggedColumnIndex] = useState<number | null>(
     null
@@ -123,202 +125,246 @@ export const SheetTable = ({
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <div className="flex-grow bg-gray-200 h-[2px]"></div>
-        <button
-          className="flex items-center py-2 rounded ml-2 text-gray-500 hover:text-green-500"
-          onClick={() => setShowAddColumnModal(true)}
-        >
-          <p className="mr-2 text-xs">Add Column</p>
-          <PiPlusCircle size={20} />
-        </button>
-      </div>
-      <div className="overflow-auto max-h-[80vh]">
+      <div className="overflow-auto max-h-[80vh] mt-4 ">
         {headers?.length > 0 ? (
-          <table className="table-auto w-full border rounded-t-lg border-gray-300">
-            <thead>
-              <tr className="bg-gray-100">
-                {headers.map((header, index) => (
-                  <th
-                    key={header.id}
-                    draggable
-                    onDragStart={() => handleDragStart(index)}
-                    onDragOver={handleDragOver}
-                    onDrop={() => handleDrop(index)}
-                    className="border-y border-gray-300 px-4 py-2 text-left cursor-move text-gray-500 font-normal"
-                  >
-                    <div className="flex items-center justify-between">
-                      {header.name}
-                      <button
-                        className="ml-2 text-red-500 hover:text-red-700"
-                        onClick={() => deleteHeader(header.type)} // Delete button
-                      >
-                        <AiOutlineDelete size={16} />
-                      </button>
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, rowIndex) => (
-                <tr key={rowIndex} className="border-y border-gray-300">
-                  {headers.map((header) => (
-                    <td key={header.id} className="border-y border-gray-300">
-                      {header.fieldType === "singletext" && (
-                        <input
-                          type="text"
-                          value={row[header.type] as string}
-                          onChange={(e) =>
-                            handleCellChange(
-                              rowIndex,
-                              header.type,
-                              e.target.value
-                            )
-                          }
-                          className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 "
-                        />
-                      )}
-                      {header.fieldType === "multiselect" && (
-                        <select
-                          multiple
-                          value={row[header.type] as string[]}
-                          onChange={(e) =>
-                            handleCellChange(
-                              rowIndex,
-                              header.type,
-                              Array.from(
-                                e.target.selectedOptions,
-                                (option) => option.value
-                              )
-                            )
-                          }
-                          className="w-full p-1 border rounded"
-                        >
-                          <option value="option1">Option 1</option>
-                          <option value="option2">Option 2</option>
-                        </select>
-                      )}
-                      {header.fieldType === "singleselect" &&
-                        header.type === "status" && (
-                          <StatusDropdown
-                            row={row}
-                            header={header} // Pass the entire header object
-                            rowIndex={rowIndex}
-                            handleCellChange={handleCellChange}
-                            statusOptions={header.option || []} // Use status options from header
-                            setStatusOptions={(newOptions) => {
-                              if (!Array.isArray(newOptions)) {
-                                console.error(
-                                  "newOptions is not an array:",
-                                  newOptions
-                                );
-                                return;
-                              }
+          <div className="relative mx-4 ">
+            {isEditMode && (
+              <button
+                className="absolute  top-3 -right-2 text-gray-500 hover:text-green-500 "
+                onClick={() => setShowAddColumnModal(true)}
+              >
+                <PiPlusCircleFill size={20} />
+              </button>
+            )}
 
-                              setHeaders((prevHeaders) =>
-                                prevHeaders.map((h) =>
-                                  h.id === header.id
-                                    ? { ...h, option: [...newOptions] }
-                                    : h
-                                )
-                              );
-                            }}
-                            onAddStatus={(newStatus, newStatusColor) => {
-                              const newStatusOption = {
-                                value: newStatus,
-                                label: newStatus,
-                                color: newStatusColor,
-                              };
-                              setHeaders((prevHeaders) =>
-                                prevHeaders.map((h) =>
-                                  h.id === header.id
-                                    ? {
-                                        ...h,
-                                        option: [
-                                          ...(h.option || []),
-                                          newStatusOption,
-                                        ],
-                                      }
-                                    : h
-                                )
-                              );
-                            }}
-                            onDeleteStatus={(statusValue) => {
-                              setHeaders((prevHeaders) =>
-                                prevHeaders.map((h) =>
-                                  h.id === header.id
-                                    ? {
-                                        ...h,
-                                        option: (h.option || []).filter(
-                                          (opt) => opt.value !== statusValue
-                                        ),
-                                      }
-                                    : h
-                                )
-                              );
-                            }}
-                            onEditStatus={(
-                              statusValue,
-                              editLabel,
-                              editColor
-                            ) => {
-                              setHeaders((prevHeaders) =>
-                                prevHeaders.map((h) =>
-                                  h.id === header.id
-                                    ? {
-                                        ...h,
-                                        option: (h.option || []).map((opt) =>
-                                          opt.value === statusValue
-                                            ? {
-                                                ...opt,
-                                                label: editLabel,
-                                                color: editColor,
-                                              }
-                                            : opt
-                                        ),
-                                      }
-                                    : h
-                                )
-                              );
-                            }}
-                          />
+            <table className="table-auto w-full border rounded-t-lg border-gray-300">
+              <thead>
+                <tr className="bg-gray-100">
+                  {headers.map((header, index) => (
+                    <th
+                      key={header.id}
+                      draggable
+                      onDragStart={() => handleDragStart(index)}
+                      onDragOver={handleDragOver}
+                      onDrop={() => handleDrop(index)}
+                      className="border-y border-gray-300 px-4 py-2 text-left cursor-move text-gray-500 font-normal"
+                    >
+                      <div className="flex items-center justify-between">
+                        {header.name}
+                        {isEditMode && (
+                          <button
+                            className="ml-2 text-red-500 hover:text-red-700"
+                            onClick={() => deleteHeader(header.type)} // Delete button
+                          >
+                            <AiOutlineDelete size={16} />
+                          </button>
                         )}
-
-                      {header.fieldType === "time" && (
-                        <input
-                          type="time"
-                          value={row[header.type] as string}
-                          onChange={(e) =>
-                            handleCellChange(
-                              rowIndex,
-                              header.type,
-                              e.target.value
-                            )
-                          }
-                          className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 "
-                        />
-                      )}
-                      {header.fieldType === "date" && (
-                        <input
-                          type="date"
-                          value={row[header.type] as string}
-                          onChange={(e) =>
-                            handleCellChange(
-                              rowIndex,
-                              header.type,
-                              e.target.value
-                            )
-                          }
-                          className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 "
-                        />
-                      )}
-                    </td>
+                      </div>
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((row, rowIndex) => (
+                  <tr key={rowIndex} className="border-y border-gray-300">
+                    {headers.map((header) => (
+                      <td key={header.id} className="border-y border-gray-300">
+                        {header.fieldType === "singletext" && (
+                          <>
+                            {isEditMode ? (
+                              <input
+                                type="text"
+                                value={row[header.type] as string}
+                                onChange={(e) =>
+                                  handleCellChange(
+                                    rowIndex,
+                                    header.type,
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 "
+                              />
+                            ) : (
+                              <div className="text-slate-700 text-sm px-4">
+                                {row[header.type] as string}
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {header.fieldType === "multiselect" && (
+                          <select
+                            multiple
+                            value={row[header.type] as string[]}
+                            onChange={(e) =>
+                              handleCellChange(
+                                rowIndex,
+                                header.type,
+                                Array.from(
+                                  e.target.selectedOptions,
+                                  (option) => option.value
+                                )
+                              )
+                            }
+                            className="w-full p-1 border rounded"
+                          >
+                            <option value="option1">Option 1</option>
+                            <option value="option2">Option 2</option>
+                          </select>
+                        )}
+                        {header.fieldType === "singleselect" &&
+                          header.type === "status" && (
+                            <>
+                              <StatusDropdown
+                                row={row}
+                                header={header}
+                                isEditMode={isEditMode}
+                                rowIndex={rowIndex}
+                                handleCellChange={handleCellChange}
+                                statusOptions={header.option || []} // Use status options from header
+                                setStatusOptions={(newOptions) => {
+                                  if (!Array.isArray(newOptions)) {
+                                    console.error(
+                                      "newOptions is not an array:",
+                                      newOptions
+                                    );
+                                    return;
+                                  }
+
+                                  setHeaders((prevHeaders) =>
+                                    prevHeaders.map((h) =>
+                                      h.id === header.id
+                                        ? { ...h, option: [...newOptions] }
+                                        : h
+                                    )
+                                  );
+                                }}
+                                onAddStatus={(newStatus, newStatusColor) => {
+                                  const newStatusOption = {
+                                    value: newStatus,
+                                    label: newStatus,
+                                    color: newStatusColor,
+                                  };
+                                  setHeaders((prevHeaders) =>
+                                    prevHeaders.map((h) =>
+                                      h.id === header.id
+                                        ? {
+                                            ...h,
+                                            option: [
+                                              ...(h.option || []),
+                                              newStatusOption,
+                                            ],
+                                          }
+                                        : h
+                                    )
+                                  );
+                                }}
+                                onDeleteStatus={(statusValue) => {
+                                  setHeaders((prevHeaders) =>
+                                    prevHeaders.map((h) =>
+                                      h.id === header.id
+                                        ? {
+                                            ...h,
+                                            option: (h.option || []).filter(
+                                              (opt) => opt.value !== statusValue
+                                            ),
+                                          }
+                                        : h
+                                    )
+                                  );
+                                }}
+                                onEditStatus={(
+                                  statusValue,
+                                  editLabel,
+                                  editColor
+                                ) => {
+                                  setHeaders((prevHeaders) =>
+                                    prevHeaders.map((h) =>
+                                      h.id === header.id
+                                        ? {
+                                            ...h,
+                                            option: (h.option || []).map(
+                                              (opt) =>
+                                                opt.value === statusValue
+                                                  ? {
+                                                      ...opt,
+                                                      label: editLabel,
+                                                      color: editColor,
+                                                    }
+                                                  : opt
+                                            ),
+                                          }
+                                        : h
+                                    )
+                                  );
+                                }}
+                              />
+                            </>
+                          )}
+
+                        {header.fieldType === "time" && (
+                          <>
+                            {isEditMode ? (
+                              <input
+                                type="time"
+                                value={row[header.type] as string}
+                                onChange={(e) =>
+                                  handleCellChange(
+                                    rowIndex,
+                                    header.type,
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 "
+                              />
+                            ) : (
+                              <div className="text-slate-700 text-sm px-4">
+                                {" "}
+                                {formatTimeToAMPM(
+                                  row[header.type] as string
+                                ) === "Invalid time input"
+                                  ? "---"
+                                  : formatTimeToAMPM(
+                                      row[header.type] as string
+                                    )}{" "}
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {header.fieldType === "date" && (
+                          <>
+                            {isEditMode ? (
+                              <input
+                                type="date"
+                                value={row[header.type] as string}
+                                onChange={(e) =>
+                                  handleCellChange(
+                                    rowIndex,
+                                    header.type,
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full bg-transparent placeholder:text-slate-400 text-slate-700 text-sm rounded-md px-3 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 "
+                              />
+                            ) : (
+                              <div className="text-slate-700 text-sm px-4">
+                                {formatDateToMMMDDYYYY(
+                                  row[header.type] as string
+                                ) === "Invalid date input"
+                                  ? "---"
+                                  : formatDateToMMMDDYYYY(
+                                      row[header.type] as string
+                                    )}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <div className="bg-gray-100 p-6 rounded-lg">
             <GiJigsawBox size={50} className="mx-auto text-gray-400" />
@@ -373,24 +419,28 @@ export const SheetTable = ({
         )}
       </div>
 
-      <div className="flex items-center justify-between">
-        <button
-          className="flex items-center py-2 rounded ml-2 text-gray-500 hover:text-green-500"
-          onClick={addRow}
-        >
-          <p className="mr-2 text-xs">Add Row</p>
-          <PiPlusCircle size={20} />
-        </button>
-        <div className="flex-grow bg-gray-200 h-[2px]"></div>
-      </div>
-      <div className="flex justify-end">
-        <button
-          onClick={handleSave}
-          className="flex items-center py-1 rounded bg-green-500 text-white px-3"
-        >
-          Save
-        </button>
-      </div>
+      {isEditMode && (
+        <>
+          <div className="flex items-center justify-between px-2">
+            <button
+              className="flex items-center  rounded ml-2 text-gray-500 hover:text-green-500"
+              onClick={addRow}
+            >
+              {/* <p className="mr-2 text-xs">Add Row</p> */}
+              <PiPlusCircleFill size={20} />
+            </button>
+            {/* <div className="flex-grow bg-gray-200 h-[2px]"></div> */}
+          </div>
+          <div className="flex justify-end px-4">
+            <button
+              onClick={handleSave}
+              className="flex items-center py-1 rounded bg-green-500 text-white px-3"
+            >
+              Save
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };

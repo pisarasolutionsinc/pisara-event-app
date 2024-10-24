@@ -26,9 +26,9 @@ export const CLOUDINARY = {
     "https://api.cloudinary.com/v1_1/pisara-dev/image/destroy",
 };
 
-// export const API_BASE_URL =
-//   process.env.API_BASE_URL || "https://pisara-service-dev-e9953c1dd9d9.herokuapp.com/api";
-export const API_BASE_URL = "http://localhost:5000/api";
+export const API_BASE_URL =
+  "https://pisara-service-dev-e9953c1dd9d9.herokuapp.com/api";
+// export const API_BASE_URL = "http://localhost:5000/api";
 
 export const APP_CONSTANTS = {
   TITLES: {

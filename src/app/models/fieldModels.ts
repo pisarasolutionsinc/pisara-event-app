@@ -1,10 +1,10 @@
 export type Field = {
-  _id: string;
+  _id?: string;
   name: string;
   type: string;
   category?: string;
   option?: string[];
-  value: any;
+  value?: any;
 };
 
 export type FieldTable = {

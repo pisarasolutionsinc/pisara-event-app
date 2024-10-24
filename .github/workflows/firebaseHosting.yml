@@ -35,6 +35,6 @@ jobs:
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KADIWA_EVENT_APP }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PISARA_EVENT_DEV }}
           channelId: ${{ env.channel_id }}
-          projectId: kadiwa-event-app
+          projectId: pisara-event-app

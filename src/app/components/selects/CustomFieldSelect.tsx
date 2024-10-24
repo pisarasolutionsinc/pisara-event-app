@@ -6,7 +6,7 @@ import Input from "../inputs/Input";
 import { safeMapFields } from "../../utils/useRender";
 import { FiX } from "react-icons/fi";
 import LocationSelect from "./LocationSelect";
-import { useToast } from "../../../context/ToastProvider";
+import { useToast } from "../../context/ToastProvider";
 import { formatDateTimeLocal } from "../../utils/useDate";
 
 type CustomFieldSelectProps = {
