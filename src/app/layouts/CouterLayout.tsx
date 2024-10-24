@@ -1,9 +1,9 @@
 import { Outlet, useParams } from "react-router-dom";
-import { TopNavigation } from "../../components/navigation/TopNavigation";
+import { TopNavigation } from "../components/navigation/TopNavigation";
 import { useAuth } from "../hooks/useAuth";
 import { useEffect } from "react";
 import { WEBAPP } from "../config/config";
-import { useToast } from "../../context/ToastProvider";
+import { useToast } from "../context/ToastProvider";
 import { useProject } from "../hooks/useProject";
 
 export const CounterLayout = () => {

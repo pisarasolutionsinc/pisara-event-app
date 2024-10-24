@@ -26,6 +26,7 @@ type StatusDropdownProps = {
     editLabel: string,
     editColor: string
   ) => void;
+  isEditMode?: boolean;
 };
 
 const StatusDropdown = ({
@@ -38,12 +39,13 @@ const StatusDropdown = ({
   onAddStatus,
   onDeleteStatus,
   onEditStatus,
+  isEditMode = false,
 }: StatusDropdownProps) => {
   const [selectedStatus, setSelectedStatus] = useState<string[]>(
     row[header.type] || []
   );
   const [isSelectedStatus, setIsSelectedStatus] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValues = Array.from(
@@ -64,16 +66,49 @@ const StatusDropdown = ({
   };
 
   const toggleEditMode = () => {
-    setIsEditMode((prev) => !prev);
+    setIsOpen((prev) => !prev);
   };
 
   return (
     <div className="custom-dropdown w-full text-sm">
-      <div className="selected-status flex items-center gap-1 cursor-pointer">
-        <div
-          onClick={() => setIsSelectedStatus((prev) => !prev)}
-          className="flex gap-1"
-        >
+      {isEditMode ? (
+        <div className="selected-status flex items-center gap-1 cursor-pointer">
+          <div
+            onClick={() => setIsSelectedStatus((prev) => !prev)}
+            className="flex gap-1"
+          >
+            {selectedStatus.length > 0 ? (
+              selectedStatus.map((status) => {
+                const option = statusOptions.find(
+                  (opt) => opt.value === status
+                );
+                return (
+                  <span
+                    key={status}
+                    style={{
+                      border: `1px solid ${option?.color}`,
+                      color: option?.color,
+                      padding: "2px 5px",
+                      borderRadius: "10px",
+                      backgroundColor: "transparent",
+                    }}
+                    className="font-semibold m-1"
+                  >
+                    {option?.label || status}
+                  </span>
+                );
+              })
+            ) : (
+              <span className="text-gray-400">No status selected</span>
+            )}
+          </div>
+          <FaEdit
+            className="text-gray-500 cursor-pointer ml-2"
+            onClick={toggleEditMode}
+          />
+        </div>
+      ) : (
+        <div className="selected-status flex items-center gap-1 cursor-default">
           {selectedStatus.length > 0 ? (
             selectedStatus.map((status) => {
               const option = statusOptions.find((opt) => opt.value === status);
@@ -97,11 +132,7 @@ const StatusDropdown = ({
             <span className="text-gray-400">No status selected</span>
           )}
         </div>
-        <FaEdit
-          className="text-gray-500 cursor-pointer ml-2"
-          onClick={toggleEditMode}
-        />
-      </div>
+      )}
 
       {isSelectedStatus && (
         <select
@@ -120,8 +151,8 @@ const StatusDropdown = ({
 
       {/* Show modal for editing statuses */}
       <StatusModal
-        isOpen={isEditMode}
-        onRequestClose={() => setIsEditMode(false)}
+        isOpen={isOpen}
+        onRequestClose={() => setIsOpen(false)}
         initialStatusOptions={statusOptions}
         handleAddStatus={onAddStatus}
         handleEditStatus={onEditStatus}

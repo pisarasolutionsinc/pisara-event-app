@@ -12,7 +12,7 @@ type EventListProps = {
 };
 
 export const EventList = ({ projectId, projectKey }: EventListProps) => {
-  const { items, fetchItem } = useItem();
+  const { items, searchItemsByQuery } = useItem();
 
   const navigate = useNavigate();
 
@@ -21,7 +21,16 @@ export const EventList = ({ projectId, projectKey }: EventListProps) => {
       projectId: projectId,
     };
 
-    fetchItem(query);
+    const params = {
+      query,
+      select: ["number", "fields", "board", "_id", "coverPhoto"],
+      populate: ["fields.common.fieldId", "fields.custom.fieldId"],
+      sort: "-createdAt",
+      limit: 10,
+      lean: true,
+    };
+
+    searchItemsByQuery(params);
   }, [projectId]);
 
   const fieldNamesToSearch = ["Start Datetime", "End Datetime"];

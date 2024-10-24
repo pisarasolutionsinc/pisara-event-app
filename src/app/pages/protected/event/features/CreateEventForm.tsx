@@ -10,7 +10,7 @@ import { CustomFieldSelect } from "../../../../components/selects/CustomFieldSel
 import { safeMapFields } from "../../../../utils/useRender";
 import { SaveFAB } from "../../../../components/buttons/SaveFAB";
 import { useItem } from "../../../../hooks/useItem";
-import { useToast } from "../../../../../context/ToastProvider";
+import { useToast } from "../../../../context/ToastProvider";
 
 interface FormData {
   projectId: string;
@@ -79,21 +79,11 @@ export const CreateEventForm = () => {
             fieldId: field._id,
             value: "",
           })),
-        // custom: projectCustomFields
-        // .filter((field: any) =>
-        //   ["Title", "Description", "Status", "Assignees"].includes(field.name)
-        // )
-        // .map((field: any) => ({
-        //   fieldId: field._id,
-        //   value: "",
-        // })),
       },
     }));
   };
 
   const handleSave = async () => {
-    console.log("Saved!", eventFormData);
-
     // Validate eventFormData
     const { fields, projectId } = eventFormData;
 
@@ -118,7 +108,27 @@ export const CreateEventForm = () => {
     }
 
     try {
-      const response = await createItem(eventFormData);
+      const ForData = {
+        ...eventFormData,
+        fields: {
+          ...eventFormData.fields,
+          custom: [
+            ...eventFormData.fields.custom,
+            ...projectCustomFields
+              .filter((field: any) =>
+                ["Templates", "Attendees", "Fields", "Groups"].includes(
+                  field.name
+                )
+              )
+              .map((field: any) => ({
+                fieldId: field._id,
+                value: "",
+              })),
+          ],
+        },
+        assignees: selectedAssignees,
+      };
+      const response = await createItem(ForData);
       if (response) {
         console.log(response);
         showToast(

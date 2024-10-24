@@ -93,7 +93,7 @@ export const useAuth = (): {
 
   const getCurrentUser = async () => {
     try {
-      const result = await userService.current();
+      const result = await userService.currentUser();
       return result;
     } catch (error) {
       console.error("Get current user failed:", error);

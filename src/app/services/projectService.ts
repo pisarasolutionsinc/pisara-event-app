@@ -63,31 +63,23 @@ export class ProjectService extends APIService {
     return this.asyncFetch.delete(url);
   }
 
-  async search(
-    query: any = {},
-    select: string[] = [],
-    populate: string[] = [],
-    limit: number = 10,
-    page: number = 1,
-    sort: string = "-createdAt",
-    lean: boolean = false
-  ) {
+  async search(params: any) {
     this.resetQuery();
 
     const body = this.buildSearchBody(
-      query,
-      populate,
-      sort,
-      page,
-      select,
-      limit,
-      lean
+      params.query as any,
+      params.populate as string[],
+      params.sort as string,
+      params.page as number,
+      params.select as string[],
+      params.limit as number,
+      params.lean as boolean
     );
 
     return this.asyncFetch.post(
       `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.PROJECT.SEARCH}`,
       {
-        body: JSON.stringify(body), // Convert the body to JSON
+        body: JSON.stringify(body),
         headers: {
           [APP_CONSTANTS.HEADER.KEY.CONTENT_TYPE]:
             APP_CONSTANTS.HEADER.VALUE.APPLICATION_JSON,

@@ -91,7 +91,7 @@ export class UserService extends APIService {
     });
   }
 
-  async current() {
+  async currentUser() {
     return this.asyncFetch.get(
       `${API_ENDPOINTS.BASEURL}${API_ENDPOINTS.USER.CHECKLOGIN}`
     );

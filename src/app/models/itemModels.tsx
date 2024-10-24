@@ -1,3 +1,5 @@
+import { Field } from "./fieldModels";
+
 interface Attachment {
   type: string;
   link: string;
@@ -11,7 +13,7 @@ interface Image {
 }
 
 interface FieldValue {
-  fieldId: string;
+  fieldId: Field;
   value: any;
 }
 
@@ -23,18 +25,19 @@ interface Comment {
 }
 
 export interface Item {
-  number: number;
-  projectId: string;
-  attachments: Attachment[];
-  images: Image[];
-  coverPhoto: string;
+  _id?: string;
+  number?: number;
+  projectId?: string;
+  attachments?: Attachment[];
+  images?: Image[];
+  coverPhoto?: string;
   fields: {
     common: FieldValue[];
     custom: FieldValue[];
   };
-  comments: Comment[];
-  children: string[];
-  assignees: string[];
+  comments?: Comment[];
+  children?: string[];
+  assignees?: string[];
   createdAt?: string;
   updatedAt?: string;
 }

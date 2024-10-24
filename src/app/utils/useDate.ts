@@ -41,3 +41,48 @@ export function formatDateV1(dateString: string): string {
 
   return finalDate;
 }
+
+export function formatDateToMMMDDYYYY(dateStr: string): string {
+  const date = new Date(dateStr);
+
+  // Validate date
+  if (isNaN(date.getTime())) {
+    return "Invalid date input";
+  }
+
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  };
+  return date.toLocaleDateString("en-US", options).replace(/,/g, ",");
+}
+
+export function formatTimeToAMPM(time: string): string {
+  const [hoursStr, minutesStr] = time.split(":");
+  const hours = parseInt(hoursStr, 10);
+  const minutes = parseInt(minutesStr, 10);
+
+  // Validate time input
+  if (
+    isNaN(hours) ||
+    isNaN(minutes) ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return "Invalid time input";
+  }
+
+  const period = hours >= 12 ? "PM" : "AM";
+  const formattedHours = (((hours + 11) % 12) + 1).toString().padStart(2, "0");
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+
+  return `${formattedHours}:${formattedMinutes} ${period}`;
+}
+
+export function isValidTimeInput(time: string): boolean {
+  const timeRegex = /^(0?[0-9]|1[0-2]):[0-5][0-9] ?([AaPp][Mm])?$/; // Matches HH:mm AM/PM format
+  return timeRegex.test(time);
+}

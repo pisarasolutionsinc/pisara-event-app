@@ -4,13 +4,6 @@ import { FiSettings } from "react-icons/fi";
 import { BiExport, BiImport } from "react-icons/bi";
 
 export const PersonList = () => {
-  const AttendanceHeader = [
-    // { id: 1, name: "Fullname", type: "name", fieldType: "singletext" },
-    // { id: 2, name: "Email", type: "email", fieldType: "singletext" },
-    // { id: 3, name: "Phone", type: "phone", fieldType: "singletext" },
-    // { id: 4, name: "Address", type: "address", fieldType: "multitext" },
-  ];
-
   return (
     <div className="p-5">
       <div className="flex justify-between">

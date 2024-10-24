@@ -1,5 +1,3 @@
-import { EventCard } from "../../../../components/cards/EventCards";
-
 import { useNavigate } from "react-router-dom";
 
 import { ProjectCard } from "../../../../components/cards/ProjectCards";

@@ -3,7 +3,7 @@ import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { PiPlus } from "react-icons/pi";
 import { twMerge } from "tailwind-merge";
 import { isExcludedCreateItemOption } from "../../utils/useOption";
-import { useToast } from "../../../context/ToastProvider";
+import { useToast } from "../../context/ToastProvider";
 import { BiCheck } from "react-icons/bi";
 
 interface Option {
