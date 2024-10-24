@@ -1,7 +1,8 @@
 export const API_ENDPOINTS = {
-  BASE: "http://localhost:5000",
-  BASEURL: "http://localhost:5000/api",
-  // BASEURL: "https://pisara-service-dev-e9953c1dd9d9.herokuapp.com/api",
+  // BASE: "http://localhost:5000",
+  BASE: "https://pisara-service-dev-e9953c1dd9d9.herokuapp.com",
+  // BASEURL: "http://localhost:5000/api",
+  BASEURL: "https://pisara-service-dev-e9953c1dd9d9.herokuapp.com/api",
 
   USER: {
     GET_ALL: "/user/get/all",
