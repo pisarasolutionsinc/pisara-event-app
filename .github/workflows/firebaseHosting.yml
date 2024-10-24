@@ -6,7 +6,6 @@ name: Deploy to Firebase Hosting on merge
 on:
   push:
     branches:
-      - local-branch
       - develop-branch
 
 jobs:
