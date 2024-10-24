@@ -50,7 +50,8 @@ export const CounterLayout = () => {
                     className="h-10"
                   />
                   <span className="text-xl font-bold text-gray-600">
-                    {location.pathname === `/apps/event`
+                    {location.pathname === `/apps/event` ||
+                    location.pathname === `/`
                       ? "Your Event Apps"
                       : currentProject?.name}
                   </span>
